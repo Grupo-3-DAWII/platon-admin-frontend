@@ -1,0 +1,212 @@
+@use 'tailwindcss';
+
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/assets/fonts/satoshi/Satoshi.ttf') format('truetype');
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  /* =========================
+     Typography
+     ========================= */
+
+  --font-sans: 'Satoshi', sans-serif;
+
+  /* =========================
+     Brand
+     ========================= */
+
+  --color-brand: #3e9786;
+  --color-brand-hover: #347e70;
+  --color-brand-strong: #275f57;
+  --color-brand-soft: #ddede8;
+  --color-brand-subtle: #f2f8f6;
+
+  /* =========================
+     Editorial accent
+     ========================= */
+
+  --color-accent: #c7785a;
+  --color-accent-soft: #f6e8e1;
+
+  /* =========================
+     Neutral / text
+     ========================= */
+
+  --color-ink: #202827;
+  --color-ink-muted: #68706e;
+  --color-ink-soft: #929895;
+
+  --color-border: #eceae4;
+  --color-border-soft: #f3f1ec;
+
+  --color-page: #faf8f3;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f7f6f2;
+
+  /* =========================
+     Information
+     ========================= */
+
+  --color-info: #6377a8;
+  --color-info-soft: #edeff6;
+
+  /* =========================
+     Success
+     ========================= */
+
+  --color-success: #4f8f70;
+  --color-success-soft: #e7f2ea;
+
+  /* =========================
+     Warning
+     ========================= */
+
+  --color-warning: #c7903c;
+  --color-warning-soft: #f8eedc;
+
+  /* =========================
+     Danger
+     ========================= */
+
+  --color-danger: #c65f5f;
+  --color-danger-soft: #f7e5e4;
+
+  /* =========================
+     Dashboard cards
+     ========================= */
+
+  --color-card-sales: #dcebe8;
+  --color-card-sales-icon-bg: #3e9786;
+  --color-card-sales-icon-text: #ffffff;
+
+  --color-card-orders: #eaecf7;
+  --color-card-orders-icon-bg: #6d79cf;
+  --color-card-orders-icon-text: #ffffff;
+
+  --color-card-customers: #fff0e2;
+  --color-card-customers-icon-bg: #e9a04a;
+  --color-card-customers-icon-text: #ffffff;
+
+  --color-card-products: #eee4f2;
+  --color-card-products-icon-bg: #a56cc1;
+  --color-card-products-icon-text: #ffffff;
+
+  /* Growth indicator */
+  --color-growth-bg: #eaf8e7;
+  --color-growth-text: #5b9b7a;
+  --color-growth-border: #bfe3d1;
+
+  /* =========================
+     Table
+     ========================= */
+
+  --color-table-header-bg: #eaf8e7;
+  --color-table-header-text: #68706e;
+
+  --color-table-row-bg: #ffffff;
+  --color-table-row-hover: #fafcfb;
+
+  --color-table-divider: #f1f0ec;
+
+  /* =========================
+     Badge colors
+     ========================= */
+
+  --color-badge-success-bg: #e7f4f1;
+  --color-badge-success-border: #b9ded6;
+  --color-badge-success-text: #2f7d6e;
+
+  --color-badge-warning-bg: #fff4dd;
+  --color-badge-warning-border: #efd7a4;
+  --color-badge-warning-text: #a36d1d;
+
+  --color-badge-danger-bg: #faeaea;
+  --color-badge-danger-border: #ebc2c2;
+  --color-badge-danger-text: #b45151;
+
+  --color-badge-info-bg: #eef0fa;
+  --color-badge-info-border: #d6daf0;
+  --color-badge-info-text: #5968a9;
+
+  --color-badge-neutral-bg: #f4f4f1;
+  --color-badge-neutral-border: #e1e2dd;
+  --color-badge-neutral-text: #68706e;
+
+  /* =========================
+     Controls
+     ========================= */
+
+  --color-control-bg: #ffffff;
+  --color-control-border: #eceae4;
+  --color-control-placeholder: #929895;
+
+  /* =========================
+     Sidebar
+     ========================= */
+
+  --color-sidebar-bg: #ffffff;
+  --color-sidebar-text: #68706e;
+  --color-sidebar-hover: #f2f8f6;
+
+  --color-sidebar-active-bg: #3e9786;
+  --color-sidebar-active-text: #ffffff;
+
+  /* =========================
+     Radius
+     ========================= */
+
+  --radius-table-header: 8px;
+  --radius-control: 12px;
+  --radius-card: 16px;
+  --radius-panel: 20px;
+  --radius-pill: 9999px;
+}
+
+/* =========================
+   Global base
+   ========================= */
+
+html,
+body {
+  min-height: 100%;
+}
+
+html {
+  font-family: var(--font-sans);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 400;
+
+  color: var(--color-ink);
+  background-color: var(--color-surface);
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}

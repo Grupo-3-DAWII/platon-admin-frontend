@@ -1,0 +1,37 @@
+<div class="w-full overflow-x-auto">
+  <table class="w-full border-separate border-spacing-0 text-left">
+    <colgroup>
+      @for (column of columns(); track column.key) {
+        <col [style.width]="column.width ?? 'auto'" />
+      }
+    </colgroup>
+
+    <thead>
+    <tr class="h-[46px]">
+      @for (
+        column of columns();
+        track column.key;
+        let first = $first;
+        let last = $last
+        ) {
+        <th
+          class="bg-table-header-bg px-5 text-xs font-semibold uppercase tracking-[0.02em] text-table-header-text"
+          [style.border-top-left-radius]="first ? '8px' : null"
+          [style.border-bottom-left-radius]="first ? '8px' : null"
+          [style.border-top-right-radius]="last ? '8px' : null"
+          [style.border-bottom-right-radius]="last ? '8px' : null"
+          [class.text-left]="!column.align || column.align === 'left'"
+          [class.text-center]="column.align === 'center'"
+          [class.text-right]="column.align === 'right'"
+        >
+          {{ column.label }}
+        </th>
+      }
+    </tr>
+    </thead>
+
+    <tbody>
+    <ng-content />
+    </tbody>
+  </table>
+</div>

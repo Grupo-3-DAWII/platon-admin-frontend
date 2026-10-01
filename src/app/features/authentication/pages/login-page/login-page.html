@@ -1,0 +1,110 @@
+<div
+  class="flex h-full w-full max-w-[420px] flex-col justify-center py-6"
+>
+  <!-- Logo -->
+  <div class="flex justify-center">
+    <img
+      src="/images/logo/platon-logotipo.png"
+      alt="Librería Platón"
+      class="h-auto w-[150px] sm:w-[165px]"
+    />
+  </div>
+
+  <!-- Login content -->
+  <div class="mt-10 sm:mt-12">
+    <!-- Heading -->
+    <div>
+      <h1
+        class="text-[20px] font-semibold tracking-tight text-ink sm:text-[22px]"
+      >
+        Bienvenido de nuevo
+      </h1>
+
+      <p class="mt-2 text-sm font-normal text-ink-muted">
+        Ingresa tus credenciales para continuar
+      </p>
+    </div>
+
+    <!-- Form -->
+    <form
+      class="mt-6 flex flex-col gap-4 sm:mt-8 sm:gap-5"
+      (submit)="$event.preventDefault(); login()"
+    >
+      <!-- Email -->
+      <app-input
+        id="email"
+        label="Correo electrónico"
+        type="email"
+        placeholder="nombre@correo.com"
+        autocomplete="email"
+        leftIcon="email"
+        [value]="email()"
+        [disabled]="loading()"
+        (valueChange)="email.set($event)"
+      />
+
+      <!-- Password -->
+      <app-input
+        id="password"
+        label="Contraseña"
+        type="password"
+        placeholder="Ingresa tu contraseña"
+        autocomplete="current-password"
+        leftIcon="lock"
+        [showPasswordToggle]="true"
+        [value]="password()"
+        [disabled]="loading()"
+        (valueChange)="password.set($event)"
+      />
+
+      @if (errorMessage()) {
+        <p class="text-sm font-normal text-danger">
+          {{ errorMessage() }}
+        </p>
+      }
+
+      <!-- Submit -->
+      <button
+        type="submit"
+        [disabled]="loading()"
+        class="mt-1 flex h-11 w-full items-center justify-center rounded-full bg-brand text-sm font-semibold text-surface transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60 sm:h-12"
+      >
+        @if (loading()) {
+          Iniciando sesión...
+        } @else {
+          Iniciar sesión
+        }
+      </button>
+    </form>
+
+    <!-- Legal -->
+    <div
+      class="mt-6 flex items-center justify-center gap-3 text-xs font-normal text-ink-muted sm:mt-8"
+    >
+      <a
+        href="#"
+        class="transition-colors hover:text-brand"
+      >
+        Privacidad
+      </a>
+
+      <span class="text-border">
+        |
+      </span>
+
+      <a
+        href="#"
+        class="transition-colors hover:text-brand"
+      >
+        Términos
+      </a>
+    </div>
+
+    <!-- Footer -->
+    <div class="mt-8 border-t border-border pt-5 sm:mt-10">
+      <p class="text-center text-[11px] font-normal text-ink-muted sm:text-xs">
+        © 2026 Librería Platón. Todos los derechos reservados.
+      </p>
+    </div>
+  </div>
+</div>

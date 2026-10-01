@@ -1,0 +1,22 @@
+<div class="h-dvh w-full overflow-hidden bg-surface">
+  <main class="grid h-full w-full grid-cols-1 lg:grid-cols-2">
+    <!-- Left image -->
+    <section class="relative hidden h-full overflow-hidden lg:block">
+      <img
+        src="/images/auth/bookstore-login.png"
+        alt="Interior de Librería Platón"
+        class="h-full w-full object-cover"
+      />
+
+      <!-- Soft overlay -->
+      <div class="absolute inset-0 bg-ink/5"></div>
+    </section>
+
+    <!-- Login -->
+    <section
+      class="flex h-full min-w-0 items-center justify-center bg-surface px-6 sm:px-10 lg:px-12 xl:px-16"
+    >
+      <router-outlet />
+    </section>
+  </main>
+</div>
