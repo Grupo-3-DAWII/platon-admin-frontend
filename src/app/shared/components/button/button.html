@@ -1,0 +1,36 @@
+<button
+  type="button"
+  [disabled]="disabled()"
+  class="
+    inline-flex
+    items-center
+    justify-center
+    font-medium
+    transition-colors
+    disabled:cursor-not-allowed
+    disabled:opacity-50
+  "
+  [class.bg-platon-green]="variant() === 'primary'"
+  [class.text-white]="variant() === 'primary'"
+  [class.hover:bg-platon-green-dark]="variant() === 'primary'"
+
+  [class.border]="variant() === 'secondary'"
+  [class.border-platon-green]="variant() === 'secondary'"
+  [class.text-platon-green]="variant() === 'secondary'"
+
+  [class.bg-transparent]="variant() === 'ghost'"
+  [class.text-ink-muted]="variant() === 'ghost'"
+
+  [class.px-3]="size() === 'sm'"
+  [class.py-2]="size() === 'sm'"
+
+  [class.px-4]="size() === 'md'"
+  [class.py-2.5]="size() === 'md'"
+
+  [class.px-5]="size() === 'lg'"
+  [class.py-3]="size() === 'lg'"
+
+  [class.rounded-control]="true"
+>
+  <ng-content />
+</button>
