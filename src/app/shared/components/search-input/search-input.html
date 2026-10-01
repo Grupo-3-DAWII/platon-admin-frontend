@@ -1,0 +1,15 @@
+<div
+  class="flex w-full items-center gap-[15px] rounded-full border border-border bg-surface px-5 py-2.5 shadow-[0_1px_3px_rgba(32,40,39,0.025)]"
+>
+  <app-icon
+    name="search"
+    [size]="20"
+  />
+
+  <input
+    type="search"
+    [placeholder]="placeholder()"
+    (input)="onInput($event)"
+    class="min-w-0 flex-1 bg-transparent text-sm font-normal text-ink outline-none placeholder:text-ink-muted"
+  />
+</div>

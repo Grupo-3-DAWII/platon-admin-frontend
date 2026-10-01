@@ -1,0 +1,34 @@
+<span
+  class="inline-flex w-fit items-center justify-center gap-[10px] rounded-full border px-[10px] py-[5px] text-xs font-medium leading-none"
+
+  [class.border-badge-success-border]="variant() === 'success'"
+  [class.bg-badge-success-bg]="variant() === 'success'"
+  [class.text-badge-success-text]="variant() === 'success'"
+
+  [class.border-badge-warning-border]="variant() === 'warning'"
+  [class.bg-badge-warning-bg]="variant() === 'warning'"
+  [class.text-badge-warning-text]="variant() === 'warning'"
+
+  [class.border-badge-danger-border]="variant() === 'danger'"
+  [class.bg-badge-danger-bg]="variant() === 'danger'"
+  [class.text-badge-danger-text]="variant() === 'danger'"
+
+  [class.border-badge-info-border]="variant() === 'info'"
+  [class.bg-badge-info-bg]="variant() === 'info'"
+  [class.text-badge-info-text]="variant() === 'info'"
+
+  [class.border-badge-neutral-border]="variant() === 'neutral'"
+  [class.bg-badge-neutral-bg]="variant() === 'neutral'"
+  [class.text-badge-neutral-text]="variant() === 'neutral'"
+>
+  @if (showDot()) {
+    <span
+      class="size-[6px] shrink-0 rounded-full bg-current"
+      aria-hidden="true"
+    ></span>
+  }
+
+  <span class="whitespace-nowrap font-medium">
+    <ng-content />
+  </span>
+</span>

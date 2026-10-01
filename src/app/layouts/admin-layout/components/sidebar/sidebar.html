@@ -1,0 +1,65 @@
+<aside
+  class="flex min-h-dvh w-[300px] shrink-0 flex-col border-r border-border bg-sidebar-bg p-6"
+>
+  <div class="mb-6">
+    <img
+      src="/images/logo/platon-logo.png"
+      alt="Librería Platón"
+      class="h-9 w-auto object-contain"
+    />
+  </div>
+
+  <nav class="flex min-h-0 flex-1 flex-col">
+    <div class="space-y-2">
+      @for (item of mainItems; track item.route) {
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="!bg-sidebar-active-bg !text-sidebar-active-text"
+          class="flex items-center gap-3 rounded-full px-4 py-3 text-sm font-medium text-sidebar-text transition-colors hover:bg-sidebar-hover"
+        >
+          <app-icon
+            [name]="item.icon"
+            [size]="20"
+          />
+
+          <span>
+            {{ item.label }}
+          </span>
+        </a>
+      }
+    </div>
+
+    <div class="mt-auto space-y-2 pt-6">
+      @for (item of secondaryItems; track item.route) {
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="!bg-sidebar-active-bg !text-sidebar-active-text"
+          class="flex items-center gap-3 rounded-full px-4 py-3 text-sm font-medium text-sidebar-text transition-colors hover:bg-sidebar-hover"
+        >
+          <app-icon
+            [name]="item.icon"
+            [size]="20"
+          />
+
+          <span>
+            {{ item.label }}
+          </span>
+        </a>
+      }
+
+      <button
+        type="button"
+        class="flex w-full items-center gap-3 rounded-full px-4 py-3 text-sm font-medium text-sidebar-text transition-colors hover:bg-danger-soft hover:text-danger"
+      >
+        <app-icon
+          name="logout"
+          [size]="20"
+        />
+
+        <span>
+          Cerrar sesión
+        </span>
+      </button>
+    </div>
+  </nav>
+</aside>
