@@ -1,1 +1,24 @@
-<p>products-page works!</p>
+<div class="flex flex-col gap-[20px] p-7">
+  <header class="flex items-center justify-between">
+    <h1 class="text-[30px] font-bold">Productos</h1>
+    <button class="flex gap-[15px] rounded-[30px] bg-brand px-[16px] py-[12px] text-white">
+      <app-icon name="add" [size]="16"></app-icon>
+      <p class="text-[14px] font-medium">Nuevo producto</p>
+    </button>
+  </header>
+
+  <app-filters-bar
+    [totalCount]="products().length"
+    (filterChange)="onFilterChange($event)"
+    (filterClick)="openFilterPanel()"
+    (sortClick)="openSortMenu()"
+  />
+
+  <div class="grid grid-cols-4 gap-[24px]">
+    @for (book of filteredProducts(); track book.id) {
+    <app-product-card [book]="book" />
+    } @empty {
+    <p class="col-span-4 py-10 text-center text-pc-grey">No hay productos para mostrar.</p>
+    }
+  </div>
+</div>
