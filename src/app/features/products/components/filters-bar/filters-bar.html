@@ -1,0 +1,44 @@
+<header class="flex items-center justify-between">
+  <div
+    role="tablist"
+    aria-label="Filtrar productos por stock"
+    class="flex rounded-[30px] bg-growth-bg p-[6px]"
+  >
+    @for (filter of filters; track filter.value) {
+    <button
+      type="button"
+      role="tab"
+      class="flex items-center gap-1 rounded-[30px] px-[12px] py-[6px] text-[16px] font-medium text-pc-grey"
+      [class.selected]="selectedFilter() === filter.value"
+      [attr.aria-selected]="selectedFilter() === filter.value"
+      (click)="selectFilter(filter.value)"
+    >
+      {{ filter.label }} @if (filter.value === 'all' && totalCount() !== null) {
+      <span class="text-brand">({{ totalCount() }})</span>
+      }
+    </button>
+    }
+  </div>
+
+  <div class="flex items-center gap-[12px]">
+    <app-search-input placeholder="Buscar productos"></app-search-input>
+
+    <button
+      type="button"
+      aria-label="Filtrar"
+      class="size-[40px] rounded-full border border-pc-border"
+      (click)="openFilters()"
+    >
+      <app-icon name="filter" [size]="10"></app-icon>
+    </button>
+
+    <button
+      type="button"
+      aria-label="Ordenar"
+      class="size-[40px] rounded-full border border-pc-border"
+      (click)="openSort()"
+    >
+      <app-icon name="sort" [size]="10"></app-icon>
+    </button>
+  </div>
+</header>
