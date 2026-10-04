@@ -1,0 +1,258 @@
+<form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-6">
+  <header class="flex items-center gap-[15px]">
+    <a
+      routerLink="/products"
+      aria-label="Volver a productos"
+      class="flex size-[40px] items-center justify-center rounded-full hover:bg-neutral-100"
+    >
+      <app-icon name="left-arrow" [size]="18"></app-icon>
+    </a>
+    <h1 class="flex-1 text-[24px] font-bold text-ink">
+      {{ isEdit ? 'Editar producto' : 'Nuevo producto' }}
+    </h1>
+  </header>
+  <div class="grid items-start gap-6 lg:grid-cols-[623px_1fr]">
+    <section class="card" aria-labelledby="general-title">
+      <h2 id="general-title" class="card-title mb-5">Información general</h2>
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div class="flex flex-col gap-2.5">
+          <label for="title" class="form-label">
+            Título del libro <span class="text-danger" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="title"
+            type="text"
+            formControlName="title"
+            required
+            placeholder="Ej. Cien años de soledad"
+            class="form-control"
+          />
+        </div>
+
+        <div class="flex flex-col gap-2.5">
+          <label for="isbn" class="form-label">
+            ISBN <span class="text-danger" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="isbn"
+            type="text"
+            formControlName="isbn"
+            required
+            placeholder="Ej. 978-982-3132-123-4"
+            class="form-control"
+          />
+        </div>
+
+        <div class="flex flex-col gap-2.5">
+          <label for="author" class="form-label">
+            Autor <span class="text-danger" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="author"
+            type="text"
+            formControlName="author"
+            required
+            placeholder="Ej. Gabriel García Márquez"
+            class="form-control"
+          />
+        </div>
+
+        <div class="flex flex-col gap-2.5">
+          <label for="publisher" class="form-label">
+            Editorial <span class="text-danger" aria-hidden="true">*</span>
+          </label>
+          <div class="relative">
+            <select
+              id="publisher"
+              formControlName="publisherId"
+              required
+              class="form-control appearance-none pr-12"
+            >
+              <option value="" disabled>Selecciona un editorial</option>
+              @for (p of publishers; track p.id) {
+              <option [value]="p.id">{{ p.name }}</option>
+              }
+            </select>
+            <app-icon
+              name="down"
+              [size]="10"
+              class="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-muted"
+            ></app-icon>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2.5">
+          <label for="genre" class="form-label">
+            Género <span class="text-danger" aria-hidden="true">*</span>
+          </label>
+          <div class="relative">
+            <select
+              id="genre"
+              formControlName="genreId"
+              required
+              class="form-control appearance-none pr-12"
+            >
+              <option value="" disabled>Selecciona una categoría</option>
+              @for (g of genres; track g.id) {
+              <option [value]="g.id">{{ g.name }}</option>
+              }
+            </select>
+            <app-icon
+              name="down"
+              [size]="10"
+              class="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-muted"
+            ></app-icon>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2.5">
+          <label for="year" class="form-label">
+            Año de publicación <span class="text-danger" aria-hidden="true">*</span>
+          </label>
+          <div class="relative">
+            <input
+              id="year"
+              type="number"
+              formControlName="year"
+              required
+              min="1000"
+              class="form-control pr-12 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+            <app-icon
+              name="calendar"
+              [size]="20"
+              class="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-muted"
+            ></app-icon>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2.5 sm:col-span-2">
+          <label for="description" class="form-label">
+            Descripción <span class="text-danger" aria-hidden="true">*</span>
+          </label>
+          <textarea
+            id="description"
+            formControlName="description"
+            required
+            placeholder="Ingresa la descripción"
+            class="form-control h-[121px] resize-none"
+          ></textarea>
+        </div>
+
+        <div class="flex flex-col gap-2.5">
+          <label for="costPrice" class="form-label">
+            Precio compra (S/) <span class="text-danger" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="costPrice"
+            type="number"
+            formControlName="costPrice"
+            required
+            min="0"
+            step="0.01"
+            inputmode="decimal"
+            class="form-control [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+        </div>
+
+        <div class="flex flex-col gap-2.5">
+          <label for="salePrice" class="form-label">
+            Precio venta (S/) <span class="text-danger" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="salePrice"
+            type="number"
+            formControlName="salePrice"
+            required
+            min="0"
+            step="0.01"
+            inputmode="decimal"
+            class="form-control [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+        </div>
+      </div>
+    </section>
+
+    <div class="flex flex-col gap-6">
+      <section class="card flex flex-col gap-5" aria-labelledby="image-title">
+        <h2 id="image-title" class="card-title">Imagen del producto</h2>
+
+        <div
+          class="flex h-[212px] items-center justify-center rounded-[30px] border-2 border-neutral-300 px-5 py-2.5"
+        >
+          <img
+            [src]="imagePreview() ?? '/images/placeholder/book-cover.png'"
+            alt="Portada del libro"
+            class="h-full w-auto object-contain"
+          />
+        </div>
+
+        <label
+          for="image"
+          class="flex cursor-pointer flex-col items-center gap-2.5 rounded-[30px] border border-neutral-300 p-[15px] text-center text-sm font-medium text-ink focus-within:ring-2 focus-within:ring-primary"
+        >
+          <span class="flex items-center gap-2.5">
+            <app-icon name="upload" [size]="18"></app-icon>
+            Cambiar imagen
+          </span>
+          <span class="text-muted">
+            <span class="text-primary underline">Haz click para subir</span> o arrastra y suelta
+          </span>
+          <input
+            id="image"
+            type="file"
+            accept="image/*"
+            class="sr-only"
+            (change)="onImageSelected($event)"
+          />
+        </label>
+      </section>
+
+      <section class="card flex flex-col gap-[19px]" aria-labelledby="status-title">
+        <h2 id="status-title" class="card-title">Estado</h2>
+
+        <div class="flex items-center gap-2.5">
+          <button
+            type="button"
+            role="switch"
+            id="active"
+            [attr.aria-checked]="form.controls.active.value"
+            (click)="toggleActive()"
+            class="flex h-[30px] w-[70px] items-center rounded-full border border-neutral-200 p-1 transition-colors"
+            [class.justify-end]="form.controls.active.value"
+          >
+            <span
+              class="h-full w-10 rounded-full transition-colors"
+              [class]="form.controls.active.value ? 'bg-brand' : 'bg-neutral-300'"
+            ></span>
+          </button>
+          <label for="active" class="text-sm font-medium text-ink">
+            {{ form.controls.active.value ? 'Activo' : 'Inactivo' }}
+          </label>
+        </div>
+
+        <p class="text-sm font-medium text-muted">
+          Un producto inactivo no se muestra en la lista de productos del sistema.
+        </p>
+      </section>
+    </div>
+  </div>
+
+  <div class="flex justify-between">
+    <button
+      type="button"
+      (click)="cancel()"
+      class="btn border-2 border-danger text-danger hover:bg-muted/10"
+    >
+      Cancelar
+    </button>
+    <button
+      type="submit"
+      [disabled]="form.invalid"
+      class="btn border-2 border-[#BFE8FF] bg-brand text-white hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      Publicar
+    </button>
+  </div>
+</form>

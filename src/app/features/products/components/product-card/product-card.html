@@ -2,18 +2,20 @@
   class="flex h-full flex-col gap-[2px] rounded-[20px] border-[2px] border-pc-border p-[15px] shadow-[var(--pc-shadow)]"
 >
   <header>
-    <div class="flex h-[40px] justify-between">
+    <div class="flex h-[40px] justify-between gap-2">
       <div class="min-w-0 *:h-[20px]">
-        <h2 class="text-[13px] font-bold truncate">{{ book().title }}</h2>
-        <p class="text-[11px] font-medium text-pc-grey">{{ book().author }}</p>
+        <h2 class="truncate text-[13px] font-bold" [title]="book().title">{{ book().title }}</h2>
+        <p class="truncate text-[11px] font-medium text-pc-grey" [title]="book().author">
+          {{ book().author }}
+        </p>
       </div>
-      <button
-        type="button"
-        aria-label="Más opciones"
-        class="flex size-[28px] items-center rounded-full border-[1px] border-pc-border p-[5px]"
+      <a
+        [routerLink]="['/products', book().id, 'edit']"
+        aria-label="Editar producto"
+        class="flex size-[28px] shrink-0 items-center rounded-full border-[1px] border-pc-border p-[5px]"
       >
         <app-icon name="more-horizontal" [size]="18" />
-      </button>
+      </a>
     </div>
     <app-badge [variant]="badge().variant">{{ badge().label }}</app-badge>
   </header>
@@ -26,16 +28,16 @@
     />
   </div>
 
-  <div class="flex mt-auto justify-between">
-    <span class="self-end text-[12px] text-pc-grey">{{ book().category }}</span>
+  <div class="mt-auto flex justify-between">
+    <span class="self-end text-[12px] text-pc-grey">{{ genre() }}</span>
     <div class="flex flex-col items-end">
       @if (book().discountPrice) {
-      <del class="text-[12px] text-pc-grey">{{ book().price | currency: 'PEN' : 'S/ ' }}</del>
+      <del class="text-[12px] text-pc-grey">{{ book().salePrice | currency: 'PEN' : 'S/ ' }}</del>
       <ins class="text-[18px] font-black no-underline">
         {{ book().discountPrice | currency: 'PEN' : 'S/ ' }}
       </ins>
       } @else {
-      <span class="text-[18px] font-black">{{ book().price | currency: 'PEN' : 'S/ ' }}</span>
+      <span class="text-[18px] font-black">{{ book().salePrice | currency: 'PEN' : 'S/ ' }}</span>
       }
     </div>
   </div>
