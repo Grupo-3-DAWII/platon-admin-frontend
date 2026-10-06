@@ -1,0 +1,40 @@
+<section class="card flex flex-col gap-5" aria-labelledby="image-title">
+  <h2 id="image-title" class="card-title">Imagen del producto</h2>
+
+  <div
+    class="flex h-[212px] items-center justify-center rounded-[30px] border-2 border-neutral-300 px-5 py-2.5"
+  >
+    <img
+      [src]="src() ?? placeholder"
+      alt="Portada del libro"
+      class="h-full w-auto object-contain"
+    />
+  </div>
+
+  @if (!disabled()) {
+  <label
+    for="image"
+    class="flex cursor-pointer flex-col items-center gap-2.5 rounded-[30px] border p-[15px] text-center text-sm font-medium text-ink focus-within:ring-2 focus-within:ring-primary"
+    [class.border-neutral-300]="!dragging()"
+    [class.border-primary]="dragging()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)"
+  >
+    <span class="flex items-center gap-2.5">
+      <app-icon name="upload" [size]="18"></app-icon>
+      Cambiar imagen
+    </span>
+    <span class="text-muted">
+      <span class="text-primary underline">Haz click para subir</span> o arrastra y suelta
+    </span>
+    <input
+      id="image"
+      type="file"
+      accept="image/*"
+      class="sr-only"
+      (change)="onImageSelected($event)"
+    />
+  </label>
+  }
+</section>

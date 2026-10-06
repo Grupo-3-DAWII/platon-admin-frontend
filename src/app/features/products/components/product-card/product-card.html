@@ -4,18 +4,18 @@
   <header>
     <div class="flex h-[40px] justify-between gap-2">
       <div class="min-w-0 *:h-[20px]">
-        <h2 class="truncate text-[13px] font-bold" [title]="book().title">{{ book().title }}</h2>
+        <a [routerLink]="['/products', book().id ]">
+          <h2 class="truncate text-[13px] font-bold" [title]="book().title">{{ book().title }}</h2>
+        </a>
         <p class="truncate text-[11px] font-medium text-pc-grey" [title]="book().author">
           {{ book().author }}
         </p>
       </div>
-      <a
-        [routerLink]="['/products', book().id, 'edit']"
-        aria-label="Editar producto"
+      <div
         class="flex size-[28px] shrink-0 items-center rounded-full border-[1px] border-pc-border p-[5px]"
       >
         <app-icon name="more-horizontal" [size]="18" />
-      </a>
+      </div>
     </div>
     <app-badge [variant]="badge().variant">{{ badge().label }}</app-badge>
   </header>

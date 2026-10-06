@@ -12,6 +12,11 @@ export const PRODUCTS_ROUTES: Routes = [
       import('./pages/product-form-page/product-form-page').then((m) => m.ProductFormPage),
   },
   {
+    path: ':id',
+    loadComponent: () =>
+      import('./pages/product-detail-page/product-detail-page').then((m) => m.ProductDetailPage),
+  },
+  {
     path: ':id/edit',
     loadComponent: () =>
       import('./pages/product-form-page/product-form-page').then((m) => m.ProductFormPage),

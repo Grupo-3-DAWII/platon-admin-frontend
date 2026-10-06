@@ -27,3 +27,43 @@ export interface Book {
 }
 
 export type NewBook = Omit<Book, 'id' | 'status' | 'discountPrice'>;
+
+interface ProductBase {
+  name: string;
+  isbn: string;
+  publicationYear: number;
+  description: string;
+  purchasePrice: number;
+  salePrice: number;
+  profitMargin: number;
+  active: boolean;
+  stock: number;
+  createdAt: Date;
+}
+export interface ProductRequest extends ProductBase {
+  authorId: number;
+  editorialId: number;
+  genreId: number;
+  imageUrl?: string;
+  imageContentType?: string;
+}
+export interface ProductResponse extends ProductBase {
+  id: number;
+  author: AuthorResponse;
+  editorial: EditorialResponse;
+  genre: GenreResponse;
+  imageUrl: string;
+}
+export interface AuthorResponse {
+  id: number;
+  firstName: String;
+  lastName: String;
+}
+export interface GenreResponse {
+  id: number;
+  name: String;
+}
+export interface EditorialResponse {
+  id: number;
+  name: String;
+}
