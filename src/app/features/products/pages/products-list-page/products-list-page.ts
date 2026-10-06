@@ -7,6 +7,7 @@ import { ProductsService } from '../../services/products.service';
 
 @Component({
   imports: [Icon, ProductCard, FiltersBar, RouterLink],
+  styleUrl: '../../style/products.css',
   selector: 'app-products-list-page',
   templateUrl: './products-list-page.html',
 })

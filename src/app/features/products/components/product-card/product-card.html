@@ -4,11 +4,11 @@
   <header>
     <div class="flex h-[40px] justify-between gap-2">
       <div class="min-w-0 *:h-[20px]">
-        <a [routerLink]="['/products', book().id ]">
-          <h2 class="truncate text-[13px] font-bold" [title]="book().title">{{ book().title }}</h2>
+        <a [routerLink]="['/products', book().id]">
+          <h2 class="truncate text-[13px] font-bold" [title]="book().name">{{ book().name }}</h2>
         </a>
-        <p class="truncate text-[11px] font-medium text-pc-grey" [title]="book().author">
-          {{ book().author }}
+        <p class="truncate text-[11px] font-medium text-pc-grey" [title]="author()">
+          {{ author() }}
         </p>
       </div>
       <div
@@ -23,22 +23,13 @@
   <div class="h-[173px]">
     <img
       class="m-auto h-full object-contain"
-      [src]="book().coverUrl"
-      [alt]="'Portada de ' + book().title"
+      [src]="book().imageUrl"
+      [alt]="'Portada de ' + book().name"
     />
   </div>
 
   <div class="mt-auto flex justify-between">
-    <span class="self-end text-[12px] text-pc-grey">{{ genre() }}</span>
-    <div class="flex flex-col items-end">
-      @if (book().discountPrice) {
-      <del class="text-[12px] text-pc-grey">{{ book().salePrice | currency: 'PEN' : 'S/ ' }}</del>
-      <ins class="text-[18px] font-black no-underline">
-        {{ book().discountPrice | currency: 'PEN' : 'S/ ' }}
-      </ins>
-      } @else {
-      <span class="text-[18px] font-black">{{ book().salePrice | currency: 'PEN' : 'S/ ' }}</span>
-      }
-    </div>
+    <span class="self-end text-[12px] text-pc-grey">{{ book().genre.name }}</span>
+    <span class="text-[18px] font-black">{{ book().salePrice | currency: 'PEN' : 'S/ ' }}</span>
   </div>
 </article>

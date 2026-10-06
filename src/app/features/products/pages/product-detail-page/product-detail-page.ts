@@ -5,7 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Icon } from '../../../../shared/components/icon/icon';
 import { ProductInfoFields } from '../../components/product-info-fields/product-info-fields';
 import { ProductImageCard } from '../../components/product-image-card/product-image-card';
-import { createProductForm } from '../../models/product-form';
+import { createProductForm, toFormValue } from '../../models/product-form';
 import { ProductsService } from '../../services/products.service';
 
 @Component({
@@ -19,9 +19,9 @@ export class ProductDetailPage {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly router = inject(Router);
   private readonly service = inject(ProductsService);
-  private readonly bookId = inject(ActivatedRoute).snapshot.paramMap.get('id');
+  private readonly idParam = inject(ActivatedRoute).snapshot.paramMap.get('id');
 
-  readonly book = this.bookId ? this.service.getById(this.bookId) : undefined;
+  readonly book = this.idParam ? this.service.getById(Number(this.idParam)) : undefined;
   readonly form = createProductForm(this.fb);
 
   constructor() {
@@ -29,8 +29,7 @@ export class ProductDetailPage {
       this.router.navigate(['/products']);
       return;
     }
-    const { id, status, discountPrice, coverUrl, ...fields } = this.book;
-    this.form.patchValue(fields);
+    this.form.patchValue(toFormValue(this.book));
     this.form.disable();
   }
 }

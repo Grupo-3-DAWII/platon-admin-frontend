@@ -5,6 +5,7 @@ import { map, startWith, switchMap } from 'rxjs';
 import { Icon } from '../../../../shared/components/icon/icon';
 import { ProductForm } from '../../models/product-form';
 import { ProductsService } from '../../services/products.service';
+import { authorFullName } from '../../models/product';
 
 @Component({
   selector: 'app-product-info-fields',
@@ -19,8 +20,10 @@ export class ProductInfoFields {
 
   readonly form = input.required<ProductForm>();
 
-  readonly publishers = this.service.publishers;
+  readonly authors = this.service.authors;
+  readonly editorials = this.service.editorials;
   readonly genres = this.service.genres;
+  protected readonly authorFullName = authorFullName;
 
   readonly disabled = toSignal(
     toObservable(this.form).pipe(

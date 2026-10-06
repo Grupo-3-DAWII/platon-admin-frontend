@@ -1,10 +1,9 @@
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { Badge, BadgeVariant } from '../../../../shared/components/badge/badge';
 import { Icon } from '../../../../shared/components/icon/icon';
-import { Book, ProductStatus } from '../../models/product';
-import { ProductsService } from '../../services/products.service';
-import { RouterLink } from '@angular/router';
+import { authorFullName, ProductResponse, ProductStatus } from '../../models/product';
 
 const STATUS_BADGE: Record<ProductStatus, { label: string; variant: BadgeVariant }> = {
   available: { label: 'Disponible', variant: 'success' },
@@ -18,10 +17,8 @@ const STATUS_BADGE: Record<ProductStatus, { label: string; variant: BadgeVariant
   templateUrl: './product-card.html',
 })
 export class ProductCard {
-  private readonly service = inject(ProductsService);
-
-  book = input.required<Book>();
+  book = input.required<ProductResponse>();
 
   badge = computed(() => STATUS_BADGE[this.book().status]);
-  genre = computed(() => this.service.genreName(this.book().genreId));
+  author = computed(() => authorFullName(this.book().author));
 }

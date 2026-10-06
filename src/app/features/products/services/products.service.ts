@@ -1,46 +1,65 @@
 import { Injectable, signal } from '@angular/core';
-import { productsMockup } from '../data/mockup';
-import { Book, Genre, NewBook, Publisher } from '../models/product';
+import { AUTHORS, EDITORIALS, GENRES, productsMockup } from '../data/mockup';
+import { ProductRequest, ProductResponse, ProductStatus } from '../models/product';
 
 export const PLACEHOLDER_COVER = '/images/placeholder/book-cover.png';
 
+// --- Mock backend logic: delete this block when the real API is connected ---
+const LOW_STOCK_THRESHOLD = 5;
+
+const statusFor = (stock: number): ProductStatus =>
+  stock <= 0 ? 'out' : stock <= LOW_STOCK_THRESHOLD ? 'low' : 'available';
+
+const marginFor = (purchase: number, sale: number) =>
+  Math.round(((sale - purchase) / purchase) * 10000) / 100;
+// ---------------------------------------------------------------------------
+
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
-  readonly publishers: Publisher[] = [
-    { id: 'alfaguara', name: 'Alfaguara' },
-    { id: 'planeta', name: 'Planeta' },
-    { id: 'fce', name: 'Fondo de Cultura Económica' },
-    { id: 'penguin', name: 'Penguin Random House' },
-    { id: 'anagrama', name: 'Anagrama' },
-  ];
+  readonly authors = Object.values(AUTHORS);
+  readonly editorials = Object.values(EDITORIALS);
+  readonly genres = Object.values(GENRES);
 
-  readonly genres: Genre[] = [
-    { id: 'novela', name: 'Novela' },
-    { id: 'cuento', name: 'Cuento' },
-    { id: 'poesia', name: 'Poesía' },
-    { id: 'historia', name: 'Historia' },
-    { id: 'filosofia', name: 'Filosofía' },
-    { id: 'infantil', name: 'Infantil' },
-    { id: 'desarrollo-personal', name: 'Desarrollo personal' },
-  ];
-
-  private readonly _books = signal<Book[]>(productsMockup);
+  private readonly _books = signal<ProductResponse[]>(
+    productsMockup.map((p) => ({ ...p, status: statusFor(p.stock), updatedAt: p.createdAt })),
+  );
   readonly books = this._books.asReadonly();
 
-  getById(id: string): Book | undefined {
+  getById(id: number): ProductResponse | undefined {
     return this._books().find((b) => b.id === id);
   }
 
-  genreName(id: string): string {
-    return this.genres.find((g) => g.id === id)?.name ?? '';
-  }
-
-  create(data: NewBook): void {
-    const book: Book = { ...data, id: crypto.randomUUID(), status: 'out' };
+  create(data: ProductRequest): ProductResponse {
+    const now = new Date().toISOString();
+    const book: ProductResponse = {
+      ...this.resolve(data),
+      id: Math.max(0, ...this._books().map((b) => b.id)) + 1,
+      stock: 0,
+      status: statusFor(0),
+      createdAt: now,
+      updatedAt: now,
+    };
     this._books.update((books) => [book, ...books]);
+    return book;
   }
 
-  update(id: string, data: NewBook): void {
-    this._books.update((books) => books.map((b) => (b.id === id ? { ...b, ...data } : b)));
+  update(id: number, data: ProductRequest): void {
+    this._books.update((books) =>
+      books.map((b) =>
+        b.id === id ? { ...b, ...this.resolve(data), updatedAt: new Date().toISOString() } : b,
+      ),
+    );
+  }
+
+  private resolve(data: ProductRequest) {
+    const { authorId, editorialId, genreId, imageUrl, ...rest } = data;
+    return {
+      ...rest,
+      profitMargin: marginFor(data.purchasePrice, data.salePrice),
+      imageUrl: imageUrl ?? PLACEHOLDER_COVER,
+      author: this.authors.find((a) => a.id === authorId)!,
+      editorial: this.editorials.find((e) => e.id === editorialId)!,
+      genre: this.genres.find((g) => g.id === genreId)!,
+    };
   }
 }
