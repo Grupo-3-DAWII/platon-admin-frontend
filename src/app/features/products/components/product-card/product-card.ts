@@ -1,8 +1,9 @@
 import { Component, computed, input } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { Badge, BadgeVariant } from '../../../../shared/components/badge/badge';
 import { Icon } from '../../../../shared/components/icon/icon';
-import { Book, ProductStatus } from '../../models/product';
+import { authorFullName, ProductResponse, ProductStatus } from '../../models/product';
 
 const STATUS_BADGE: Record<ProductStatus, { label: string; variant: BadgeVariant }> = {
   available: { label: 'Disponible', variant: 'success' },
@@ -11,12 +12,13 @@ const STATUS_BADGE: Record<ProductStatus, { label: string; variant: BadgeVariant
 };
 
 @Component({
-  imports: [Badge, Icon, CurrencyPipe],
+  imports: [Badge, Icon, CurrencyPipe, RouterLink],
   selector: 'app-product-card',
   templateUrl: './product-card.html',
 })
 export class ProductCard {
-  book = input.required<Book>();
+  book = input.required<ProductResponse>();
 
   badge = computed(() => STATUS_BADGE[this.book().status]);
+  author = computed(() => authorFullName(this.book().author));
 }

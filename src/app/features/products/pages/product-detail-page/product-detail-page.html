@@ -1,0 +1,62 @@
+@if (book) {
+<div class="flex flex-col gap-6">
+  <header class="flex items-center gap-[15px]">
+    <a
+      routerLink="/products"
+      aria-label="Volver a productos"
+      class="flex size-[40px] items-center justify-center rounded-full hover:bg-neutral-100"
+    >
+      <app-icon name="left-arrow" [size]="18"></app-icon>
+    </a>
+    <h1 class="flex-1 text-[24px] font-bold text-ink">Detalle del producto</h1>
+
+    <a
+      [routerLink]="['/products', book.id, 'edit']"
+      class="btn inline-flex items-center gap-2 border-2 border-[#e2e8f0] text-[#66656A] hover:bg-muted/10"
+    >
+      <app-icon name="edit" [size]="18"></app-icon>
+      Editar producto
+    </a>
+    <a
+      routerLink="/inventory"
+      class="btn inline-flex items-center gap-2 bg-[#FFF3E6] text-[#E99A45]"
+    >
+      <app-icon name="show2" [size]="18"></app-icon>
+      Ver en inventario
+    </a>
+  </header>
+
+  <div class="grid items-start gap-6 lg:grid-cols-[623px_1fr]">
+    <app-product-info-fields [form]="form" />
+
+    <app-product-image-card [src]="book.imageUrl" [disabled]="true">
+      <section aria-labelledby="summary-title" class="flex flex-col gap-4 px-3">
+        <h2 id="summary-title" class="text-base font-semibold text-ink">Resumen del registro</h2>
+        <dl class="flex flex-col gap-3 text-sm">
+          <div class="flex items-center justify-between gap-2">
+            <dt class="flex items-center gap-3 text-pc-grey">
+              <app-icon name="calendar" [size]="20"></app-icon>
+              Fecha de registro
+            </dt>
+            <dd class="text-pc-grey">{{ book.createdAt | date: 'd MMM y' }}</dd>
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <dt class="flex items-center gap-3 text-pc-grey">
+              <app-icon name="clock" [size]="20"></app-icon>
+              Fecha de actualización
+            </dt>
+            <dd class="text-pc-grey">{{ book.updatedAt | date: 'd MMM y' }}</dd>
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <dt class="flex items-center gap-3 text-pc-grey">
+              <app-icon name="circle-danger" [size]="20"></app-icon>
+              Estado
+            </dt>
+            <dd class="text-pc-grey">{{ book.active ? 'Activo' : 'Inactivo' }}</dd>
+          </div>
+        </dl>
+      </section>
+    </app-product-image-card>
+  </div>
+</div>
+}
