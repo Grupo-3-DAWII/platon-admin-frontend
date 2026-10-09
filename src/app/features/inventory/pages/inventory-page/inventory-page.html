@@ -1,0 +1,93 @@
+<div class="flex min-h-full flex-col gap-[20px]">
+  <app-page-header title="Inventario">
+    <button
+      type="button"
+      class="flex gap-[15px] rounded-[30px] bg-brand px-[16px] py-[12px] text-white"
+      (click)="registerMovement()"
+    >
+      <app-icon name="add" [size]="16"></app-icon>
+      <span class="text-[14px] font-medium">Registrar movimiento</span>
+    </button>
+  </app-page-header>
+
+  <app-filters-bar
+    searchPlaceholder="Buscar productos"
+    [selectedFilter]="selectedFilter()"
+    [totalCount]="totalCount()"
+    (filterChange)="onFilterChange($event)"
+    (searchChange)="onSearchChange($event)"
+    (filterClick)="openFilterPanel()"
+    (sortClick)="openSortMenu()"
+  />
+
+  <app-data-table [columns]="columns">
+    @for (item of pagedItems(); track item.product.id) { @let product = item.product;
+    <tr class="h-[56px] transition-colors hover:bg-table-row-hover">
+      <td class="border-b border-table-divider p-2">
+        <div class="flex items-center gap-3">
+          <img
+            class="size-11 shrink-0 object-contain"
+            [src]="product.imageUrl"
+            [alt]="'Portada de ' + product.name"
+          />
+          <div>
+            <a
+              [routerLink]="['/products', product.id]"
+              class="block text-base leading-tight text-ink"
+            >
+              {{ product.name }}
+            </a>
+            <p class="text-sm text-ink-muted">{{ authorFullName(product.author) }}</p>
+          </div>
+        </div>
+      </td>
+
+      <td class="border-b border-table-divider px-5 py-2 text-base text-ink">
+        {{ product.genre.name }}
+      </td>
+
+      <td class="border-b border-table-divider px-6 py-2 text-base text-ink">
+        {{ product.stock }}
+      </td>
+
+      <td class="border-b border-table-divider px-5 py-2">
+        <app-stock-status-badge [status]="product.status" />
+      </td>
+
+      <td class="border-b border-table-divider px-5 py-2">
+        @if (item.lastMovement; as movement) {
+        <p class="text-base text-ink text-sm">{{ movementSummary(movement) }}</p>
+        <p class="text-sm text-ink-muted text-xs">{{ movementDate(movement.createdAt) }}</p>
+        } @else {
+        <span class="text-ink-soft">—</span>
+        }
+      </td>
+
+      <td class="border-b border-table-divider px-5 py-2 text-center">
+        <button
+          type="button"
+          [attr.aria-label]="'Opciones de ' + product.name"
+          class="inline-flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
+        >
+          <app-icon name="more" [size]="12" />
+        </button>
+      </td>
+    </tr>
+    } @empty {
+    <tr>
+      <td colspan="6" class="py-10 text-center text-pc-grey">No hay productos para mostrar.</td>
+    </tr>
+    }
+  </app-data-table>
+
+  <div class="mt-auto">
+    <app-pagination
+      [page]="page()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="pageSizeOptions"
+      [totalItems]="filteredItems().length"
+      (pageChange)="page.set($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  </div>
+</div>
