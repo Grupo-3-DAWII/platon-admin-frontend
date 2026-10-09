@@ -1,0 +1,569 @@
+<section class="flex min-w-0 flex-col gap-6 p-7 pt-5">
+  <!-- Header -->
+  <header class="flex flex-col gap-1">
+    <h1 class="text-[30px] font-bold leading-tight text-ink">
+      Centro de ayuda
+    </h1>
+
+    <p class="text-[14px] text-ink-muted">
+      Encuentra respuestas y guías rápidas para utilizar el sistema.
+    </p>
+  </header>
+
+  <!-- Search -->
+  <app-search-input
+    placeholder="Buscar ayuda por tema o palabra clave"
+    (valueChange)="onSearch($event)"
+  />
+
+  <!-- Categories -->
+  <section
+    aria-label="Categorías de ayuda"
+    class="
+      grid grid-cols-1 gap-4
+      md:grid-cols-2
+      xl:grid-cols-3
+      2xl:grid-cols-6
+    "
+  >
+    @for (category of categories; track category.id) {
+      <button
+        type="button"
+        class="
+          group
+          flex min-h-[142px] flex-col justify-between
+          rounded-[20px]
+          border border-transparent
+          p-5
+          text-left
+          transition-all duration-200
+          hover:-translate-y-[2px]
+          hover:shadow-[0_5px_16px_rgb(0_0_0/5%)]
+          focus-visible:outline-none
+          focus-visible:ring-2
+          focus-visible:ring-brand
+          focus-visible:ring-offset-2
+        "
+        [ngClass]="category.backgroundClass"
+        [class.!border-brand]="selectedCategory() === category.id"
+        [attr.aria-pressed]="selectedCategory() === category.id"
+        (click)="selectCategory(category.id)"
+      >
+        <div class="flex w-full items-start justify-between">
+          <div
+            class="
+              flex size-10 items-center justify-center
+              rounded-full
+              text-white
+            "
+            [ngClass]="category.iconBackgroundClass"
+          >
+            <app-icon
+              [name]="category.icon"
+              [size]="20"
+            />
+          </div>
+
+          <span
+            class="
+              flex size-8 items-center justify-center
+              text-ink
+              transition-transform duration-200
+              group-hover:translate-x-1
+            "
+          >
+            <app-icon
+              name="right"
+              [size]="18"
+            />
+          </span>
+        </div>
+
+        <div class="mt-5">
+          <h2 class="text-[17px] font-bold leading-tight text-ink">
+            {{ category.title }}
+          </h2>
+
+          <p class="mt-1 text-[13px] leading-5 text-ink-muted">
+            {{ category.description }}
+          </p>
+        </div>
+      </button>
+    }
+  </section>
+
+  <!-- Content -->
+  <div
+    class="
+      grid grid-cols-1 gap-6
+      xl:grid-cols-[minmax(0,1fr)_380px]
+    "
+  >
+    <!-- FAQ -->
+    <section
+      class="
+        min-w-0
+        rounded-[20px]
+        border border-border
+        bg-surface
+        p-5
+      "
+      aria-labelledby="faq-title"
+    >
+      <header class="mb-3 flex items-start justify-between gap-5">
+        <div>
+          <h2
+            id="faq-title"
+            class="text-[18px] font-bold text-ink"
+          >
+            Preguntas frecuentes
+          </h2>
+
+          @if (selectedCategoryLabel()) {
+            <p class="mt-1 text-[13px] text-ink-muted">
+              Mostrando ayuda de
+
+              <span class="font-medium text-brand">
+                {{ selectedCategoryLabel() }}
+              </span>
+            </p>
+          } @else {
+            <p class="mt-1 text-[13px] text-ink-muted">
+              Consulta las dudas más comunes sobre el uso del sistema.
+            </p>
+          }
+        </div>
+
+        @if (selectedCategory() !== 'all') {
+          <button
+            type="button"
+            class="
+              shrink-0
+              rounded-full
+              px-3 py-2
+              text-[13px] font-medium
+              text-brand
+              transition-colors
+              hover:bg-brand-subtle
+              hover:text-brand-hover
+            "
+            (click)="showAllCategories()"
+          >
+            Ver todas
+          </button>
+        }
+      </header>
+
+      <div class="flex flex-col">
+        @for (faq of filteredFaqs(); track faq.id) {
+          <article
+            class="
+              border-b border-border-soft
+              last:border-b-0
+            "
+          >
+            <button
+              type="button"
+              class="
+                flex w-full
+                items-center justify-between
+                gap-4
+                py-[18px]
+                text-left
+                focus-visible:outline-none
+              "
+              [attr.aria-expanded]="activeFaqId() === faq.id"
+              [attr.aria-controls]="'faq-answer-' + faq.id"
+              (click)="toggleFaq(faq.id)"
+            >
+              <span
+                class="
+                  text-[14px]
+                  font-medium
+                  text-ink
+                  transition-colors
+                  hover:text-brand
+                "
+              >
+                {{ faq.question }}
+              </span>
+
+              <span
+                class="
+                  flex size-8 shrink-0
+                  items-center justify-center
+                  rounded-full
+                  text-ink-muted
+                  transition-all duration-200
+                  hover:bg-surface-muted
+                "
+                [class.rotate-180]="activeFaqId() === faq.id"
+              >
+                <app-icon
+                  name="down"
+                  [size]="17"
+                />
+              </span>
+            </button>
+
+            @if (activeFaqId() === faq.id) {
+              <div
+                [id]="'faq-answer-' + faq.id"
+                class="pb-[18px] pr-12"
+              >
+                <p
+                  class="
+                    max-w-[800px]
+                    text-[13px]
+                    leading-6
+                    text-ink-muted
+                  "
+                >
+                  {{ faq.answer }}
+                </p>
+              </div>
+            }
+          </article>
+        } @empty {
+          <div
+            class="
+              flex min-h-[300px]
+              flex-col items-center justify-center
+              px-6
+              text-center
+            "
+          >
+            <div
+              class="
+                mb-4
+                flex size-12
+                items-center justify-center
+                rounded-full
+                bg-brand-subtle
+                text-brand
+              "
+            >
+              <app-icon
+                name="search"
+                [size]="21"
+              />
+            </div>
+
+            <h3 class="text-[15px] font-bold text-ink">
+              No encontramos resultados
+            </h3>
+
+            <p
+              class="
+                mt-1
+                max-w-[360px]
+                text-[13px]
+                leading-5
+                text-ink-muted
+              "
+            >
+              Intenta buscar con otra palabra o consulta todas las
+              categorías disponibles.
+            </p>
+
+            @if (selectedCategory() !== 'all') {
+              <button
+                type="button"
+                class="
+                  mt-4
+                  rounded-full
+                  bg-brand-subtle
+                  px-4 py-2
+                  text-[13px]
+                  font-medium
+                  text-brand
+                  hover:bg-brand-soft
+                "
+                (click)="showAllCategories()"
+              >
+                Ver todas las preguntas
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Right column -->
+    <aside class="flex flex-col gap-5">
+      <!-- Support -->
+      <section
+        class="
+    rounded-[20px]
+    border border-border
+    bg-surface
+    p-5
+  "
+      >
+        <!-- Header -->
+        <div class="flex items-start gap-3">
+          <div
+            class="
+        flex size-11 shrink-0
+        items-center justify-center
+        rounded-full
+        bg-brand-soft
+        text-brand
+      "
+          >
+            <app-icon
+              name="help"
+              [size]="22"
+            />
+          </div>
+
+          <div>
+            <h2 class="text-[18px] font-bold text-ink">
+              ¿Necesitas ayuda?
+            </h2>
+
+            <p class="mt-1 text-[13px] leading-5 text-ink-muted">
+              Si no encuentras una respuesta, comunícate con nuestro equipo de soporte.
+            </p>
+          </div>
+        </div>
+
+        <div class="my-5 border-t border-border-soft"></div>
+
+        <!-- Support info -->
+        <div class="flex flex-col gap-5">
+          <!-- Email -->
+          <div class="flex items-center gap-3">
+            <div
+              class="
+          flex size-10 shrink-0
+          items-center justify-center
+          rounded-full
+          border border-border
+          bg-surface
+          text-ink-muted
+        "
+            >
+              <app-icon
+                name="email"
+                [size]="19"
+              />
+            </div>
+
+            <div class="min-w-0">
+              <p class="text-[12px] text-ink-muted">
+                Correo de soporte
+              </p>
+
+              <a
+                href="mailto:soporte@platon.pe"
+                class="
+            mt-0.5
+            block truncate
+            text-[13px]
+            font-medium
+            text-brand
+            underline-offset-2
+            transition-colors
+            hover:text-brand-hover
+            hover:underline
+          "
+              >
+                soporte&#64;platon.pe
+              </a>
+            </div>
+          </div>
+
+          <!-- Schedule -->
+          <div class="flex items-center gap-3">
+            <div
+              class="
+          flex size-10 shrink-0
+          items-center justify-center
+          rounded-full
+          border border-border
+          bg-surface
+          text-ink-muted
+        "
+            >
+              <app-icon
+                name="clock"
+                [size]="19"
+              />
+            </div>
+
+            <div>
+              <p class="text-[12px] text-ink-muted">
+                Horario de atención
+              </p>
+
+              <p class="mt-0.5 text-[13px] font-medium text-ink">
+                Lunes a viernes
+              </p>
+
+              <p class="text-[12px] text-ink-muted">
+                9:00 a. m. - 6:00 p. m.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact button -->
+        <a
+          [href]="whatsappUrl()"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="
+      mt-6
+      flex w-full
+      items-center justify-center
+      gap-3
+      rounded-full
+      bg-brand
+      px-5 py-3
+      text-[14px]
+      font-medium
+      text-white
+      transition-colors
+      hover:bg-brand-hover
+      focus-visible:outline-none
+      focus-visible:ring-2
+      focus-visible:ring-brand
+      focus-visible:ring-offset-2
+    "
+        >
+    <span>
+        Contactar por WhatsApp
+    </span>
+
+          <app-icon
+            name="right"
+            [size]="18"
+          />
+        </a>
+      </section>
+
+      <!-- Before contacting -->
+      <section
+        class="
+          rounded-[20px]
+          border border-border
+          bg-surface
+          p-5
+        "
+      >
+        <div class="flex items-start gap-3">
+          <div
+            class="
+              flex size-10 shrink-0
+              items-center justify-center
+              rounded-full
+              bg-accent-soft
+              text-accent
+            "
+          >
+            <app-icon
+              name="file"
+              [size]="19"
+            />
+          </div>
+
+          <div>
+            <h2 class="text-[16px] font-bold text-ink">
+              Antes de contactar
+            </h2>
+
+            <p class="mt-1 text-[13px] leading-5 text-ink-muted">
+              Ten esta información a la mano para poder ayudarte con
+              mayor rapidez.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-5 flex flex-col gap-5">
+          <!-- Step 1 -->
+          <div class="flex gap-3">
+            <span
+              class="
+                flex size-6 shrink-0
+                items-center justify-center
+                rounded-full
+                bg-brand-subtle
+                text-[12px]
+                font-bold
+                text-brand
+              "
+            >
+              1
+            </span>
+
+            <div>
+              <p class="text-[13px] font-medium text-ink">
+                Indica dónde ocurrió
+              </p>
+
+              <p class="mt-0.5 text-[12px] leading-5 text-ink-muted">
+                Menciona el módulo en el que encontraste el problema.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="flex gap-3">
+            <span
+              class="
+                flex size-6 shrink-0
+                items-center justify-center
+                rounded-full
+                bg-brand-subtle
+                text-[12px]
+                font-bold
+                text-brand
+              "
+            >
+              2
+            </span>
+
+            <div>
+              <p class="text-[13px] font-medium text-ink">
+                Describe lo sucedido
+              </p>
+
+              <p class="mt-0.5 text-[12px] leading-5 text-ink-muted">
+                Explica qué acción realizabas y qué resultado obtuviste.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="flex gap-3">
+            <span
+              class="
+                flex size-6 shrink-0
+                items-center justify-center
+                rounded-full
+                bg-brand-subtle
+                text-[12px]
+                font-bold
+                text-brand
+              "
+            >
+              3
+            </span>
+
+            <div>
+              <p class="text-[13px] font-medium text-ink">
+                Envía una captura
+              </p>
+
+              <p class="mt-0.5 text-[12px] leading-5 text-ink-muted">
+                Si aparece un mensaje de error, adjunta una captura
+                para identificarlo mejor.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </div>
+</section>
