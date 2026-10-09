@@ -1,13 +1,14 @@
 import { Injectable, signal } from '@angular/core';
 import { AUTHORS, EDITORIALS, GENRES, productsMockup } from '../data/mockup';
-import { ProductRequest, ProductResponse, ProductStatus } from '../models/product';
+import { StockStatus } from '../../../shared/models/stock-status';
+import { ProductRequest, ProductResponse } from '../models/product';
 
 export const PLACEHOLDER_COVER = '/images/placeholder/book-cover.png';
 
 // --- Mock backend logic: delete this block when the real API is connected ---
 const LOW_STOCK_THRESHOLD = 5;
 
-const statusFor = (stock: number): ProductStatus =>
+const statusFor = (stock: number): StockStatus =>
   stock <= 0 ? 'out' : stock <= LOW_STOCK_THRESHOLD ? 'low' : 'available';
 
 const marginFor = (purchase: number, sale: number) =>

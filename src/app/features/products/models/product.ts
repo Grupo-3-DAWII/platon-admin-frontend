@@ -1,4 +1,4 @@
-export type ProductStatus = 'available' | 'low' | 'out';
+import { StockStatus } from '../../../shared/models/stock-status';
 
 interface ProductBase {
   name: string;
@@ -25,7 +25,7 @@ export interface ProductResponse extends ProductBase {
   imageUrl: string;
   profitMargin: number;
   stock: number;
-  status: ProductStatus;
+  status: StockStatus;
   createdAt: string;
   updatedAt: string;
 }
