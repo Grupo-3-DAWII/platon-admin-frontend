@@ -1,12 +1,44 @@
 @use 'tailwindcss';
 
+/* =========================================================
+   Typography
+   ========================================================= */
+
 @font-face {
   font-family: 'Satoshi';
-  src: url('/assets/fonts/satoshi/Satoshi.ttf') format('truetype');
-  font-weight: 300 900;
+  src: url('/fonts/satoshi/Satoshi-Regular.otf') format('opentype');
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
+
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi/Satoshi-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi/Satoshi-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi/Satoshi-Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* =========================================================
+   Design Tokens
+   ========================================================= */
 
 @theme {
   /* =========================
@@ -95,7 +127,10 @@
   --color-card-products-icon-bg: #a56cc1;
   --color-card-products-icon-text: #ffffff;
 
-  /* Growth indicator */
+  /* =========================
+     Growth indicator
+     ========================= */
+
   --color-growth-bg: #eaf8e7;
   --color-growth-text: #5b9b7a;
   --color-growth-border: #bfe3d1;
@@ -109,7 +144,6 @@
 
   --color-table-row-bg: #ffffff;
   --color-table-row-hover: #fafcfb;
-
   --color-table-divider: #f1f0ec;
 
   /* =========================
@@ -164,11 +198,19 @@
   --radius-card: 16px;
   --radius-panel: 20px;
   --radius-pill: 9999px;
+
+  /* =========================
+     Products / Product Card
+     ========================= */
+
+  --color-pc-grey: #66656a;
+  --color-pc-border: #e2e8f0;
+  --pc-shadow: 0 1px 3px rgb(0 0 0 / 10%);
 }
 
-/* =========================
+/* =========================================================
    Global base
-   ========================= */
+   ========================================================= */
 
 html,
 body {
@@ -194,11 +236,19 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* =========================================================
+   Box sizing
+   ========================================================= */
+
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
+
+/* =========================================================
+   Form controls
+   ========================================================= */
 
 button,
 input,
@@ -209,4 +259,36 @@ select {
 
 button {
   cursor: pointer;
+}
+
+/* =========================================================
+   Basic document elements
+   ========================================================= */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin: 0;
+}
+
+img,
+svg {
+  display: block;
+}
+
+img {
+  max-width: 100%;
+}
+
+/* =========================================================
+   Selection
+   ========================================================= */
+
+::selection {
+  color: var(--color-ink);
+  background-color: var(--color-brand-soft);
 }
