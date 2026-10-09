@@ -2,20 +2,15 @@
   <table class="w-full border-separate border-spacing-0 text-left">
     <colgroup>
       @for (column of columns(); track column.key) {
-        <col [style.width]="column.width ?? 'auto'" />
+      <col [style.width]="column.width ?? 'auto'" />
       }
     </colgroup>
 
     <thead>
-    <tr class="h-[46px]">
-      @for (
-        column of columns();
-        track column.key;
-        let first = $first;
-        let last = $last
-        ) {
+      <tr class="h-[46px]">
+        @for ( column of columns(); track column.key; let first = $first; let last = $last ) {
         <th
-          class="bg-table-header-bg px-5 text-xs font-semibold uppercase tracking-[0.02em] text-table-header-text"
+          class="bg-table-header-bg px-5 text-xs font-medium uppercase tracking-[0.02em] text-table-header-text"
           [style.border-top-left-radius]="first ? '8px' : null"
           [style.border-bottom-left-radius]="first ? '8px' : null"
           [style.border-top-right-radius]="last ? '8px' : null"
@@ -26,12 +21,12 @@
         >
           {{ column.label }}
         </th>
-      }
-    </tr>
+        }
+      </tr>
     </thead>
 
     <tbody>
-    <ng-content />
+      <ng-content />
     </tbody>
   </table>
 </div>

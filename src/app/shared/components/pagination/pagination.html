@@ -21,12 +21,11 @@
   <div class="flex items-center gap-3">
     <button
       type="button"
-      class="flex h-10 items-center gap-1 rounded-lg bg-white pl-2 pr-3 text-base font-medium shadow-[var(--pc-shadow)] disabled:cursor-not-allowed disabled:opacity-50"
+      class="flex h-10 items-center gap-1 rounded-lg bg-white pl-2 pr-3 text-base font-medium disabled:cursor-not-allowed disabled:opacity-50"
       [disabled]="page() <= 1"
       (click)="goTo(page() - 1)"
     >
-      <app-icon name="left-arrow" [size]="18" />
-      Anterior
+      <app-icon name="left-arrow" [size]="16" />
     </button>
 
     <ul class="flex items-center gap-3">
@@ -56,12 +55,11 @@
 
     <button
       type="button"
-      class="flex h-10 items-center gap-1 rounded-lg bg-white pl-3 pr-2 text-base font-medium shadow-[var(--pc-shadow)] disabled:cursor-not-allowed disabled:opacity-50"
+      class="flex h-10 items-center gap-1 rounded-lg bg-white pl-3 pr-2 text-base font-medium disabled:cursor-not-allowed disabled:opacity-50"
       [disabled]="page() >= totalPages()"
       (click)="goTo(page() + 1)"
     >
-      Siguiente
-      <app-icon name="left-arrow" [size]="18" class="rotate-180" />
+      <app-icon name="left-arrow" [size]="16" class="rotate-180" />
     </button>
   </div>
 </nav>
