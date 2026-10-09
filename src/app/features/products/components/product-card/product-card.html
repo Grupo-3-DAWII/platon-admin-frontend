@@ -1,0 +1,35 @@
+<article
+  class="flex h-full flex-col gap-[2px] rounded-[20px] border-[2px] border-pc-border p-[15px] shadow-[var(--pc-shadow)]"
+>
+  <header>
+    <div class="flex h-[40px] justify-between gap-2">
+      <div class="min-w-0 *:h-[20px]">
+        <a [routerLink]="['/products', book().id]">
+          <h2 class="truncate text-[13px] font-bold" [title]="book().name">{{ book().name }}</h2>
+        </a>
+        <p class="truncate text-[11px] font-medium text-pc-grey" [title]="author()">
+          {{ author() }}
+        </p>
+      </div>
+      <div
+        class="flex size-[28px] shrink-0 items-center rounded-full border-[1px] border-pc-border p-[5px]"
+      >
+        <app-icon name="more-horizontal" [size]="18" />
+      </div>
+    </div>
+    <app-stock-status-badge [status]="book().status" />
+  </header>
+
+  <div class="h-[173px]">
+    <img
+      class="m-auto h-full object-contain"
+      [src]="book().imageUrl"
+      [alt]="'Portada de ' + book().name"
+    />
+  </div>
+
+  <div class="mt-auto flex justify-between">
+    <span class="self-end text-[12px] text-pc-grey">{{ book().genre.name }}</span>
+    <span class="text-[18px] font-black">{{ book().salePrice | currency: 'PEN' : 'S/ ' }}</span>
+  </div>
+</article>

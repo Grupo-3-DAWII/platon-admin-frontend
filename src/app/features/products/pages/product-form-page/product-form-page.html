@@ -1,0 +1,65 @@
+<form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-6">
+  <header class="flex items-center gap-[15px]">
+    <a
+      [routerLink]="backLink"
+      [attr.aria-label]="isEdit ? 'Volver al detalle' : 'Volver a productos'"
+      class="flex size-[40px] items-center justify-center rounded-full hover:bg-neutral-100"
+    >
+      <app-icon name="left-arrow" [size]="18"></app-icon>
+    </a>
+    <h1 class="flex-1 text-[24px] font-bold text-ink">
+      {{ isEdit ? 'Editar producto' : 'Nuevo producto' }}
+    </h1>
+  </header>
+  <div class="grid items-start gap-6 lg:grid-cols-[623px_1fr]">
+    <app-product-info-fields [form]="form"></app-product-info-fields>
+    <div class="flex flex-col gap-6">
+      <app-product-image-card [src]="imagePreview()" (imageChange)="imagePreview.set($event)" />
+
+      <section class="card flex flex-col gap-[19px]" aria-labelledby="status-title">
+        <h2 id="status-title" class="card-title">Estado</h2>
+
+        <div class="flex items-center gap-2.5">
+          <button
+            type="button"
+            role="switch"
+            id="active"
+            [attr.aria-checked]="form.controls.active.value"
+            (click)="toggleActive()"
+            class="flex h-[30px] w-[70px] items-center rounded-full border border-neutral-200 p-1 transition-colors"
+            [class.justify-end]="form.controls.active.value"
+          >
+            <span
+              class="h-full w-10 rounded-full transition-colors"
+              [class]="form.controls.active.value ? 'bg-brand' : 'bg-neutral-300'"
+            ></span>
+          </button>
+          <label for="active" class="text-sm font-medium text-ink">
+            {{ form.controls.active.value ? 'Activo' : 'Inactivo' }}
+          </label>
+        </div>
+
+        <p class="text-sm font-medium text-muted">
+          Un producto inactivo no se muestra en la lista de productos del sistema.
+        </p>
+      </section>
+    </div>
+  </div>
+
+  <div class="flex justify-between">
+    <button
+      type="button"
+      (click)="cancel()"
+      class="btn border-2 border-danger text-danger hover:bg-muted/10"
+    >
+      Cancelar
+    </button>
+    <button
+      type="submit"
+      [disabled]="form.invalid"
+      class="btn border-2 border-[#BFE8FF] bg-brand text-white hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      Publicar
+    </button>
+  </div>
+</form>
