@@ -1,12 +1,14 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { FiltersBar } from '../../../../shared/components/filters-bar/filters-bar';
 import { Icon } from '../../../../shared/components/icon/icon';
+import { PageHeader } from '../../../../shared/components/page-header/page-header';
+import { StockFilter } from '../../../../shared/models/stock-status';
 import { ProductCard } from '../../components/product-card/product-card';
-import { FiltersBar, StockFilter } from '../../components/filters-bar/filters-bar';
 import { ProductsService } from '../../services/products.service';
 
 @Component({
-  imports: [Icon, ProductCard, FiltersBar, RouterLink],
+  imports: [Icon, ProductCard, FiltersBar, PageHeader, RouterLink],
   styleUrl: '../../style/products.css',
   selector: 'app-products-list-page',
   templateUrl: './products-list-page.html',

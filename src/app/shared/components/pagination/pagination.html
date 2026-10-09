@@ -1,0 +1,67 @@
+<nav class="flex items-center justify-between gap-4" aria-label="Paginación">
+  <div class="flex items-center gap-[14px] text-pc-grey">
+    <label class="flex items-center gap-[5px] text-xs font-bold">
+      Mostrar
+      <select
+        aria-label="Registros por página"
+        class="cursor-pointer bg-transparent font-bold outline-none"
+        (change)="onPageSizeChange($event)"
+      >
+        @for (size of pageSizeOptions(); track size) {
+        <option [value]="size" [selected]="size === pageSize()">{{ size }}</option>
+        }
+      </select>
+    </label>
+
+    <p class="text-[10px]">
+      Mostrando del {{ from() }} al {{ to() }} de {{ totalItems() }} registros
+    </p>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <button
+      type="button"
+      class="flex h-10 items-center gap-1 rounded-lg bg-white pl-2 pr-3 text-base font-medium shadow-[var(--pc-shadow)] disabled:cursor-not-allowed disabled:opacity-50"
+      [disabled]="page() <= 1"
+      (click)="goTo(page() - 1)"
+    >
+      <app-icon name="left-arrow" [size]="18" />
+      Anterior
+    </button>
+
+    <ul class="flex items-center gap-3">
+      @for (item of pages(); track item) {
+      <li>
+        @if (item === 'gap-start' || item === 'gap-end') {
+        <span class="flex size-9 items-center justify-center font-bold" aria-hidden="true">…</span>
+        } @else {
+        <button
+          type="button"
+          class="flex size-9 items-center justify-center rounded-full border text-base"
+          [class.border-pc-border]="item !== page()"
+          [class.font-medium]="item !== page()"
+          [class.border-transparent]="item === page()"
+          [class.bg-slate-300]="item === page()"
+          [class.font-bold]="item === page()"
+          [attr.aria-current]="item === page() ? 'page' : null"
+          [attr.aria-label]="'Página ' + item"
+          (click)="goTo(item)"
+        >
+          {{ item }}
+        </button>
+        }
+      </li>
+      }
+    </ul>
+
+    <button
+      type="button"
+      class="flex h-10 items-center gap-1 rounded-lg bg-white pl-3 pr-2 text-base font-medium shadow-[var(--pc-shadow)] disabled:cursor-not-allowed disabled:opacity-50"
+      [disabled]="page() >= totalPages()"
+      (click)="goTo(page() + 1)"
+    >
+      Siguiente
+      <app-icon name="left-arrow" [size]="18" class="rotate-180" />
+    </button>
+  </div>
+</nav>

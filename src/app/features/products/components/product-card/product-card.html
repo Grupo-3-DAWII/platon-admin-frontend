@@ -17,7 +17,7 @@
         <app-icon name="more-horizontal" [size]="18" />
       </div>
     </div>
-    <app-badge [variant]="badge().variant">{{ badge().label }}</app-badge>
+    <app-stock-status-badge [status]="book().status" />
   </header>
 
   <div class="h-[173px]">

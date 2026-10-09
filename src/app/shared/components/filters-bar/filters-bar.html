@@ -1,7 +1,7 @@
 <header class="flex items-center justify-between">
   <div
     role="tablist"
-    aria-label="Filtrar productos por stock"
+    [attr.aria-label]="tabsLabel()"
     class="flex rounded-[30px] bg-growth-bg p-[6px]"
   >
     @for (filter of filters; track filter.value) {
@@ -11,7 +11,7 @@
       class="flex items-center gap-1 rounded-[30px] px-[12px] py-[6px] text-[16px] font-medium text-pc-grey"
       [class.selected]="selectedFilter() === filter.value"
       [attr.aria-selected]="selectedFilter() === filter.value"
-      (click)="selectFilter(filter.value)"
+      (click)="filterChange.emit(filter.value)"
     >
       {{ filter.label }} @if (filter.value === 'all' && totalCount() !== null) {
       <span class="text-brand">({{ totalCount() }})</span>
@@ -21,13 +21,16 @@
   </div>
 
   <div class="flex items-center gap-[12px]">
-    <app-search-input placeholder="Buscar productos"></app-search-input>
+    <app-search-input
+      [placeholder]="searchPlaceholder()"
+      (valueChange)="searchChange.emit($event)"
+    />
 
     <button
       type="button"
       aria-label="Filtrar"
       class="size-[40px] rounded-full border border-pc-border"
-      (click)="openFilters()"
+      (click)="filterClick.emit()"
     >
       <app-icon name="filter" [size]="10"></app-icon>
     </button>
@@ -36,7 +39,7 @@
       type="button"
       aria-label="Ordenar"
       class="size-[40px] rounded-full border border-pc-border"
-      (click)="openSort()"
+      (click)="sortClick.emit()"
     >
       <app-icon name="sort" [size]="10"></app-icon>
     </button>

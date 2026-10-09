@@ -1,8 +1,8 @@
-import { Component, input, output, signal } from '@angular/core';
-import { SearchInput } from '../../../../shared/components/search-input/search-input';
-import { Icon } from '../../../../shared/components/icon/icon';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 
-export type StockFilter = 'all' | 'available' | 'low' | 'out';
+import { Icon } from '../icon/icon';
+import { SearchInput } from '../search-input/search-input';
+import { StockFilter } from '../../models/stock-status';
 
 interface FilterOption {
   value: StockFilter;
@@ -14,15 +14,18 @@ interface FilterOption {
   styleUrl: './filters-bar.css',
   selector: 'app-filters-bar',
   templateUrl: './filters-bar.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FiltersBar {
+  selectedFilter = input<StockFilter>('all');
   totalCount = input<number | null>(null);
+  searchPlaceholder = input('Buscar...');
+  tabsLabel = input('Filtrar por estado de stock');
 
   filterChange = output<StockFilter>();
+  searchChange = output<string>();
   filterClick = output<void>();
   sortClick = output<void>();
-
-  selectedFilter = signal<StockFilter>('all');
 
   readonly filters: FilterOption[] = [
     { value: 'all', label: 'Todos' },
@@ -30,17 +33,4 @@ export class FiltersBar {
     { value: 'low', label: 'Poco stock' },
     { value: 'out', label: 'Agotado' },
   ];
-
-  selectFilter(value: StockFilter) {
-    this.selectedFilter.set(value);
-    this.filterChange.emit(value);
-  }
-
-  openFilters() {
-    this.filterClick.emit();
-  }
-
-  openSort() {
-    this.sortClick.emit();
-  }
 }
