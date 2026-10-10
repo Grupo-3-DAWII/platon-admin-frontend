@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { FiltersBar } from '../../../../shared/components/filters-bar/filters-bar';
 import { Icon } from '../../../../shared/components/icon/icon';
 import { PageHeader } from '../../../../shared/components/page-header/page-header';
-import { StockFilter } from '../../../../shared/models/stock-status';
+import { STOCK_FILTERS, StockFilter } from '../../../../shared/models/stock-status';
 import { ProductCard } from '../../components/product-card/product-card';
 import { ProductsService } from '../../services/products.service';
 
@@ -15,7 +15,7 @@ import { ProductsService } from '../../services/products.service';
 })
 export class ProductsListPage {
   products = inject(ProductsService).books;
-
+  readonly filters = STOCK_FILTERS;
   selectedFilter = signal<StockFilter>('all');
 
   filteredProducts = computed(() => {

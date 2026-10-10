@@ -4,7 +4,7 @@
     [attr.aria-label]="tabsLabel()"
     class="flex rounded-[30px] bg-growth-bg p-[6px]"
   >
-    @for (filter of filters; track filter.value) {
+    @for (filter of filters(); track filter.value) {
     <button
       type="button"
       role="tab"

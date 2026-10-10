@@ -11,6 +11,7 @@
 
   <app-filters-bar
     searchPlaceholder="Buscar productos"
+    [filters]="filters"
     [selectedFilter]="selectedFilter()"
     [totalCount]="products().length"
     (filterChange)="onFilterChange($event)"

@@ -29,19 +29,25 @@ export const routes: Routes = [
         loadComponent: () => import('./features/dashboard/dashboard').then((m) => m.Dashboard),
       },
       {
-        path: 'help-center',
-        loadComponent: () =>
-          import('./features/help-center/help-center-page').then((m) => m.HelpCenterPage),
+        path: 'products',
+        loadChildren: () =>
+          import('./features/products/products.routes').then((m) => m.PRODUCTS_ROUTES),
       },
+
       {
         path: 'inventory',
         loadChildren: () =>
           import('./features/inventory/inventory.routes').then((m) => m.INVENTORY_ROUTES),
       },
+
       {
-        path: 'products',
-        loadChildren: () =>
-          import('./features/products/products.routes').then((m) => m.PRODUCTS_ROUTES),
+        path: 'orders',
+        loadChildren: () => import('./features/orders/orders.routes').then((m) => m.ORDERS_ROUTES),
+      },
+      {
+        path: 'help-center',
+        loadComponent: () =>
+          import('./features/help-center/help-center-page').then((m) => m.HelpCenterPage),
       },
     ],
   },
