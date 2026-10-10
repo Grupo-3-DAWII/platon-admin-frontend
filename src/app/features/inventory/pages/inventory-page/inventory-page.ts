@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DataTable, TableColumn } from '../../../../shared/components/data-table/data-table';
 import { FiltersBar } from '../../../../shared/components/filters-bar/filters-bar';
@@ -6,7 +6,8 @@ import { Icon } from '../../../../shared/components/icon/icon';
 import { PageHeader } from '../../../../shared/components/page-header/page-header';
 import { Pagination } from '../../../../shared/components/pagination/pagination';
 import { StockStatusBadge } from '../../../../shared/components/stock-status-badge/stock-status-badge';
-import { StockFilter } from '../../../../shared/models/stock-status';
+import { STOCK_FILTERS, StockFilter } from '../../../../shared/models/stock-status';
+import { ListQuery } from '../../../../shared/utils/list-query';
 import { authorFullName } from '../../../products/models/product';
 import { InventoryService } from '../../services/inventory.service';
 import { movementDate, movementSummary } from '../../utils/movement-format';
@@ -34,16 +35,14 @@ export class InventoryPage {
   readonly movementDate = movementDate;
   readonly movementSummary = movementSummary;
 
+  readonly filters = STOCK_FILTERS;
+  readonly query = new ListQuery<StockFilter>('all');
+
   totalCount = computed(() => this.items().length);
 
-  selectedFilter = signal<StockFilter>('all');
-  searchTerm = signal('');
-  page = signal(1);
-  pageSize = signal(10);
-
   filteredItems = computed(() => {
-    const filter = this.selectedFilter();
-    const term = this.searchTerm().trim().toLowerCase();
+    const filter = this.query.filter();
+    const term = this.query.search().trim().toLowerCase();
 
     return this.items().filter(({ product }) => {
       const matchesFilter = filter === 'all' || product.status === filter;
@@ -55,25 +54,7 @@ export class InventoryPage {
     });
   });
 
-  pagedItems = computed(() => {
-    const start = (this.page() - 1) * this.pageSize();
-    return this.filteredItems().slice(start, start + this.pageSize());
-  });
-
-  onFilterChange(filter: StockFilter) {
-    this.selectedFilter.set(filter);
-    this.page.set(1);
-  }
-
-  onSearchChange(term: string) {
-    this.searchTerm.set(term);
-    this.page.set(1);
-  }
-
-  onPageSizeChange(size: number) {
-    this.pageSize.set(size);
-    this.page.set(1);
-  }
+  pagedItems = computed(() => this.query.paginate(this.filteredItems()));
 
   openFilterPanel() {}
 

@@ -12,10 +12,11 @@
 
   <app-filters-bar
     searchPlaceholder="Buscar productos"
-    [selectedFilter]="selectedFilter()"
+    [filters]="filters"
+    [selectedFilter]="query.filter()"
     [totalCount]="totalCount()"
-    (filterChange)="onFilterChange($event)"
-    (searchChange)="onSearchChange($event)"
+    (filterChange)="query.setFilter($event)"
+    (searchChange)="query.setSearch($event)"
     (filterClick)="openFilterPanel()"
     (sortClick)="openSortMenu()"
   />
@@ -82,12 +83,12 @@
 
   <div class="mt-auto">
     <app-pagination
-      [page]="page()"
-      [pageSize]="pageSize()"
+      [page]="query.page()"
+      [pageSize]="query.pageSize()"
       [pageSizeOptions]="pageSizeOptions"
       [totalItems]="filteredItems().length"
-      (pageChange)="page.set($event)"
-      (pageSizeChange)="onPageSizeChange($event)"
+      (pageChange)="query.setPage($event)"
+      (pageSizeChange)="query.setPageSize($event)"
     />
   </div>
 </div>
