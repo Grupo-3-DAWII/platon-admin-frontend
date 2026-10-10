@@ -1,8 +1,5 @@
 import { FilterOption } from '../../../shared/models/filter-option';
-
-export type OrderStatus = 'delivered' | 'pending' | 'cancelled';
-
-export type OrderFilter = 'all' | OrderStatus;
+import { OrderFilter, OrderStatus } from '../../../shared/models/order-status';
 
 export const ORDER_FILTERS: FilterOption<OrderFilter>[] = [
   { value: 'all', label: 'Todos' },
