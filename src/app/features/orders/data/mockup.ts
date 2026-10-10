@@ -1,4 +1,5 @@
-import { OrderItem, OrderResponse, OrderStatus } from '../models/order';
+import { OrderStatus } from '../../../shared/models/order-status';
+import { OrderItem, OrderResponse } from '../models/order';
 
 const book = (
   productId: number,

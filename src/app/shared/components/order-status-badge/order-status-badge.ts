@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { Badge, BadgeVariant } from '../../../../shared/components/badge/badge';
-import { OrderStatus } from '../../models/order';
+import { OrderStatus } from '../../models/order-status';
+import { Badge, BadgeVariant } from '../badge/badge';
 
 const ORDER_STATUS_BADGE: Record<OrderStatus, { label: string; variant: BadgeVariant }> = {
   delivered: { label: 'Entregado', variant: 'success' },

@@ -1,17 +1,8 @@
 <div class="flex min-h-full flex-col gap-[20px]">
-  <app-page-header title="Pedidos">
-    <button
-      type="button"
-      class="flex gap-[15px] rounded-[30px] bg-brand px-[16px] py-[12px] text-white"
-      (click)="createOrder()"
-    >
-      <app-icon name="add" [size]="16"></app-icon>
-      <span class="text-[14px] font-medium">Nuevo pedido</span>
-    </button>
-  </app-page-header>
+  <app-page-header title="Ventas" subtitle="Consulta las ventas realizadas y el estado de pago" />
 
   <app-filters-bar
-    searchPlaceholder="Buscar pedidos"
+    searchPlaceholder="Buscar por venta, pedido o cliente..."
     [filters]="filters"
     [selectedFilter]="query.filter()"
     [totalCount]="totalCount()"
@@ -22,46 +13,50 @@
   />
 
   <app-data-table [columns]="columns">
-    @for (order of pagedOrders(); track order.id) {
+    @for (sale of pagedSales(); track sale.id) {
     <tr class="h-[56px] transition-colors hover:bg-table-row-hover">
       <td class="border-b border-table-divider px-5 py-2 text-base font-medium text-ink">
-        {{ order.id }}
-      </td>
-
-      <td class="border-b border-table-divider px-5 py-2 text-base font-semibold text-ink-muted">
-        {{ order.code }}
-      </td>
-
-      <td class="border-b border-table-divider px-5 py-2 text-base text-ink">
-        {{ order.customerName }}
+        {{ sale.id }}
       </td>
 
       <td class="border-b border-table-divider px-5 py-2">
-        @if (order.items[0]; as first) {
-        <p class="text-base font-medium text-ink">{{ first.productName }}</p>
-        @if (order.items.length > 1) {
-        <p class="text-xs font-medium text-ink-muted">+{{ order.items.length - 1 }} más</p>
-        } } @else {
-        <span class="text-ink-soft">—</span>
-        }
+        <a
+          routerLink="/orders"
+          class="inline-flex items-center gap-2.5 text-base font-semibold text-ink-muted transition-colors hover:text-ink"
+        >
+          {{ sale.orderCode }}
+          <app-icon name="foreign" [size]="12" />
+        </a>
+      </td>
+
+      <td class="border-b border-table-divider px-5 py-2 text-base font-medium text-ink-muted">
+        {{ sale.orderCode }}
+        <app-icon name="foreign" [size]="12"></app-icon>
       </td>
 
       <td class="border-b border-table-divider px-5 py-2 text-base text-ink">
-        {{ order.createdAt | date: 'dd-MM-yyyy' }}
+        {{ sale.customerName }}
       </td>
 
       <td class="border-b border-table-divider px-5 py-2 text-base text-ink">
-        {{ order.total | currency: 'PEN' : 'S/ ' }}
+        {{ sale.createdAt | date: 'dd-MM-yyyy' }}
+      </td>
+      <td class="border-b border-table-divider px-5 py-2 text-base text-ink">
+        {{ sale.total | currency: 'PEN' : 'S/ ' }}
       </td>
 
       <td class="border-b border-table-divider px-5 py-2">
-        <app-order-status-badge [status]="order.status" />
+        <app-payment-status-badge [status]="sale.paymentStatus" />
+      </td>
+
+      <td class="border-b border-table-divider px-5 py-2">
+        <app-order-status-badge [status]="sale.status" />
       </td>
 
       <td class="border-b border-table-divider px-5 py-2 text-center">
         <button
           type="button"
-          [attr.aria-label]="'Opciones del pedido ' + order.code"
+          [attr.aria-label]="'Opciones de la venta ' + sale.code"
           class="inline-flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
         >
           <app-icon name="more" [size]="12" />
@@ -70,7 +65,7 @@
     </tr>
     } @empty {
     <tr>
-      <td colspan="8" class="py-10 text-center text-pc-grey">No hay pedidos para mostrar.</td>
+      <td colspan="9" class="py-10 text-center text-pc-grey">No hay ventas para mostrar.</td>
     </tr>
     }
   </app-data-table>
@@ -80,7 +75,7 @@
       [page]="query.page()"
       [pageSize]="query.pageSize()"
       [pageSizeOptions]="pageSizeOptions"
-      [totalItems]="filteredOrders().length"
+      [totalItems]="filteredSales().length"
       (pageChange)="query.setPage($event)"
       (pageSizeChange)="query.setPageSize($event)"
     />
