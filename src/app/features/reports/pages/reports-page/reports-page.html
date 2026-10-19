@@ -1,0 +1,569 @@
+<div class="flex min-h-full flex-col gap-5">
+  <app-page-header
+    title="Reportes"
+    subtitle="Analiza el rendimiento comercial y operativo de la librería."
+  >
+    <div class="flex items-center gap-3">
+      <div
+        class="flex h-11 items-center gap-2 rounded-full border border-control-border bg-surface px-4"
+      >
+        <app-icon
+          name="calendar"
+          [size]="17"
+        />
+
+        <select
+          aria-label="Periodo del reporte"
+          class="cursor-pointer bg-transparent text-sm font-medium text-ink outline-none"
+          [value]="reports.period()"
+          (change)="onPeriodChange($event)"
+        >
+          <option value="7">
+            Últimos 7 días
+          </option>
+
+          <option value="30">
+            Últimos 30 días
+          </option>
+
+          <option value="90">
+            Últimos 90 días
+          </option>
+
+          <option value="all">
+            Todo el periodo
+          </option>
+        </select>
+      </div>
+
+      <button
+        type="button"
+        class="flex h-11 items-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
+        (click)="exportReport()"
+      >
+        <app-icon
+          name="file"
+          [size]="17"
+        />
+
+        Exportar reporte
+      </button>
+    </div>
+  </app-page-header>
+
+  @let kpis = reports.kpis();
+
+  <!-- KPI -->
+  <section
+    class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"
+  >
+    <article
+      class="rounded-card border border-border bg-surface p-5"
+    >
+      <div class="flex items-center gap-4">
+        <div
+          class="flex size-11 shrink-0 items-center justify-center rounded-control bg-brand-soft text-brand"
+        >
+          <app-icon
+            name="reports"
+            [size]="20"
+          />
+        </div>
+
+        <div>
+          <p
+            class="text-sm font-medium text-ink-muted"
+          >
+            Ventas netas
+          </p>
+
+          <p
+            class="mt-1 text-[24px] font-semibold tracking-tight text-ink"
+          >
+            {{
+              kpis.netSales
+                | currency:
+                'PEN':
+                'S/ '
+            }}
+          </p>
+        </div>
+      </div>
+
+      <p
+        class="mt-4 text-xs text-ink-soft"
+      >
+        Ventas pagadas en el periodo
+      </p>
+    </article>
+
+    <article
+      class="rounded-card border border-border bg-surface p-5"
+    >
+      <div class="flex items-center gap-4">
+        <div
+          class="flex size-11 shrink-0 items-center justify-center rounded-control bg-card-orders text-card-orders-icon-bg"
+        >
+          <app-icon
+            name="sales"
+            [size]="20"
+          />
+        </div>
+
+        <div>
+          <p
+            class="text-sm font-medium text-ink-muted"
+          >
+            Ventas realizadas
+          </p>
+
+          <p
+            class="mt-1 text-[24px] font-semibold tracking-tight text-ink"
+          >
+            {{ kpis.completedSales }}
+          </p>
+        </div>
+      </div>
+
+      <p
+        class="mt-4 text-xs text-ink-soft"
+      >
+        Ventas no canceladas
+      </p>
+    </article>
+
+    <article
+      class="rounded-card border border-border bg-surface p-5"
+    >
+      <div class="flex items-center gap-4">
+        <div
+          class="flex size-11 shrink-0 items-center justify-center rounded-control bg-accent-soft text-accent"
+        >
+          <app-icon
+            name="orders"
+            [size]="20"
+          />
+        </div>
+
+        <div>
+          <p
+            class="text-sm font-medium text-ink-muted"
+          >
+            Ticket promedio
+          </p>
+
+          <p
+            class="mt-1 text-[24px] font-semibold tracking-tight text-ink"
+          >
+            {{
+              kpis.averageTicket
+                | currency:
+                'PEN':
+                'S/ '
+            }}
+          </p>
+        </div>
+      </div>
+
+      <p
+        class="mt-4 text-xs text-ink-soft"
+      >
+        Promedio por venta pagada
+      </p>
+    </article>
+
+    <article
+      class="rounded-card border border-border bg-surface p-5"
+    >
+      <div class="flex items-center gap-4">
+        <div
+          class="flex size-11 shrink-0 items-center justify-center rounded-control bg-danger-soft text-danger"
+        >
+          <app-icon
+            name="inventory"
+            [size]="20"
+          />
+        </div>
+
+        <div>
+          <p
+            class="text-sm font-medium text-ink-muted"
+          >
+            Stock crítico
+          </p>
+
+          <p
+            class="mt-1 text-[24px] font-semibold tracking-tight text-ink"
+          >
+            {{ kpis.criticalStock }}
+            productos
+          </p>
+        </div>
+      </div>
+
+      <p
+        class="mt-4 text-xs font-medium text-danger"
+      >
+        Requiere atención
+      </p>
+    </article>
+  </section>
+
+  <!-- Chart + inventory -->
+  <section
+    class="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.75fr)_minmax(320px,0.85fr)]"
+  >
+    <article
+      class="min-w-0 rounded-panel border border-border bg-surface p-5"
+    >
+      <div>
+        <h2
+          class="text-base font-semibold text-ink"
+        >
+          Evolución de ventas
+        </h2>
+
+        <p
+          class="mt-1 text-sm text-ink-muted"
+        >
+          Ingresos registrados durante el periodo.
+        </p>
+      </div>
+
+      <div class="mt-4">
+        <apx-chart
+          [series]="chartSeries()"
+          [chart]="chartOptions.chart"
+          [colors]="chartOptions.colors"
+          [xaxis]="chartXAxis()"
+          [yaxis]="chartOptions.yaxis"
+          [stroke]="chartOptions.stroke"
+          [dataLabels]="chartOptions.dataLabels"
+          [fill]="chartOptions.fill"
+          [tooltip]="chartOptions.tooltip"
+          [grid]="chartOptions.grid"
+          [markers]="chartOptions.markers"
+        />
+      </div>
+    </article>
+
+    <article
+      class="rounded-panel border border-border bg-surface p-5"
+    >
+      <h2
+        class="text-base font-semibold text-ink"
+      >
+        Estado de inventario
+      </h2>
+
+      <p
+        class="mt-1 text-sm text-ink-muted"
+      >
+        Distribución actual del stock.
+      </p>
+
+      <div class="mt-7 flex flex-col gap-7">
+        @for (
+          metric of reports.inventoryStatus();
+          track metric.key
+          ) {
+          <div>
+            <div
+              class="mb-2 flex items-center justify-between gap-4"
+            >
+              <span
+                class="text-sm font-medium text-ink-muted"
+              >
+                {{ metric.label }}
+              </span>
+
+              <div
+                class="flex items-center gap-4"
+              >
+                <span
+                  class="text-sm font-semibold text-ink"
+                >
+                  {{ metric.count }}
+                </span>
+
+                <span
+                  class="w-10 text-right text-sm font-semibold"
+                  [class.text-brand]="
+                    metric.tone ===
+                    'success'
+                  "
+                  [class.text-warning]="
+                    metric.tone ===
+                    'warning'
+                  "
+                  [class.text-danger]="
+                    metric.tone ===
+                    'danger'
+                  "
+                >
+                  {{ metric.percentage }}%
+                </span>
+              </div>
+            </div>
+
+            <div
+              class="h-2 overflow-hidden rounded-full bg-surface-muted"
+            >
+              <div
+                class="h-full rounded-full transition-all"
+                [style.width.%]="metric.percentage"
+                [class.bg-brand]="
+                  metric.tone ===
+                  'success'
+                "
+                [class.bg-warning]="
+                  metric.tone ===
+                  'warning'
+                "
+                [class.bg-danger]="
+                  metric.tone ===
+                  'danger'
+                "
+              ></div>
+            </div>
+          </div>
+        }
+      </div>
+    </article>
+  </section>
+
+  <!-- Sales status / payments -->
+  <section
+    class="grid grid-cols-1 gap-5 xl:grid-cols-2"
+  >
+    <article
+      class="rounded-panel border border-border bg-surface p-5"
+    >
+      <h2
+        class="text-base font-semibold text-ink"
+      >
+        Estado de ventas
+      </h2>
+
+      <div class="mt-6 flex flex-col gap-5">
+        @for (
+          metric of reports.salesStatus();
+          track metric.key
+          ) {
+          <div
+            class="grid grid-cols-[110px_minmax(0,1fr)_45px] items-center gap-4"
+          >
+            <span
+              class="text-sm text-ink-muted"
+            >
+              {{ metric.label }}
+            </span>
+
+            <div
+              class="h-2 overflow-hidden rounded-full bg-surface-muted"
+            >
+              <div
+                class="h-full rounded-full"
+                [style.width.%]="metric.percentage"
+                [class.bg-brand]="
+                  metric.tone ===
+                  'success'
+                "
+                [class.bg-warning]="
+                  metric.tone ===
+                  'warning'
+                "
+                [class.bg-danger]="
+                  metric.tone ===
+                  'danger'
+                "
+              ></div>
+            </div>
+
+            <span
+              class="text-right text-sm font-semibold"
+              [class.text-brand]="
+                metric.tone ===
+                'success'
+              "
+              [class.text-warning]="
+                metric.tone ===
+                'warning'
+              "
+              [class.text-danger]="
+                metric.tone ===
+                'danger'
+              "
+            >
+              {{ metric.percentage }}%
+            </span>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article
+      class="rounded-panel border border-border bg-surface p-5"
+    >
+      <h2
+        class="text-base font-semibold text-ink"
+      >
+        Estado de pagos
+      </h2>
+
+      <div class="mt-6 flex flex-col gap-5">
+        @for (
+          metric of reports.paymentStatus();
+          track metric.key
+          ) {
+          <div
+            class="grid grid-cols-[110px_minmax(0,1fr)_45px] items-center gap-4"
+          >
+            <span
+              class="text-sm text-ink-muted"
+            >
+              {{ metric.label }}
+            </span>
+
+            <div
+              class="h-2 overflow-hidden rounded-full bg-surface-muted"
+            >
+              <div
+                class="h-full rounded-full"
+                [style.width.%]="metric.percentage"
+                [class.bg-brand]="
+                  metric.tone ===
+                  'success'
+                "
+                [class.bg-warning]="
+                  metric.tone ===
+                  'warning'
+                "
+                [class.bg-danger]="
+                  metric.tone ===
+                  'danger'
+                "
+              ></div>
+            </div>
+
+            <span
+              class="text-right text-sm font-semibold"
+              [class.text-brand]="
+                metric.tone ===
+                'success'
+              "
+              [class.text-warning]="
+                metric.tone ===
+                'warning'
+              "
+              [class.text-danger]="
+                metric.tone ===
+                'danger'
+              "
+            >
+              {{ metric.percentage }}%
+            </span>
+          </div>
+        }
+      </div>
+    </article>
+  </section>
+
+  <!-- Period summary -->
+  <article
+    class="rounded-panel border border-border bg-surface p-5"
+  >
+    <div>
+      <h2
+        class="text-base font-semibold text-ink"
+      >
+        Resumen del periodo
+      </h2>
+
+      <p
+        class="mt-1 text-sm text-ink-muted"
+      >
+        Consolidado diario de ventas e ingresos.
+      </p>
+    </div>
+
+    <div class="mt-5">
+      <app-data-table
+        [columns]="columns"
+      >
+        @for (
+          row of pagedRows();
+          track row.date
+          ) {
+          <tr
+            class="h-[54px] transition-colors hover:bg-table-row-hover"
+          >
+            <td
+              class="border-b border-table-divider px-5 py-2 text-sm text-ink"
+            >
+              {{
+                row.date
+                  | date:
+                  'dd/MM/yyyy'
+              }}
+            </td>
+
+            <td
+              class="border-b border-table-divider px-5 py-2 text-sm text-ink"
+            >
+              {{ row.sales }}
+            </td>
+
+            <td
+              class="border-b border-table-divider px-5 py-2 text-sm font-medium text-ink"
+            >
+              {{
+                row.revenue
+                  | currency:
+                  'PEN':
+                  'S/ '
+              }}
+            </td>
+
+            <td
+              class="border-b border-table-divider px-5 py-2 text-sm text-ink"
+            >
+              {{
+                row.averageTicket
+                  | currency:
+                  'PEN':
+                  'S/ '
+              }}
+            </td>
+
+            <td
+              class="border-b border-table-divider px-5 py-2 text-sm text-ink-muted"
+            >
+              {{ row.cancelled }}
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td
+              colspan="5"
+              class="py-12 text-center text-sm text-ink-muted"
+            >
+              No hay información para el periodo seleccionado.
+            </td>
+          </tr>
+        }
+      </app-data-table>
+    </div>
+
+    <div class="mt-5">
+      <app-pagination
+        [page]="page()"
+        [pageSize]="pageSize()"
+        [pageSizeOptions]="pageSizeOptions"
+        [totalItems]="reports.dailySummary().length"
+        (pageChange)="setPage($event)"
+        (pageSizeChange)="setPageSize($event)"
+      />
+    </div>
+  </article>
+</div>

@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+
+import { AuthService } from '../../../../core/auth/auth.service';
 import { Icon } from '../../../../shared/components/icon/icon';
 
 interface SidebarItem {
@@ -16,6 +18,9 @@ interface SidebarItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Sidebar {
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+
   readonly mainItems: SidebarItem[] = [
     {
       label: 'Dashboard',
@@ -71,4 +76,10 @@ export class Sidebar {
       icon: 'settings',
     },
   ];
+
+  logout(): void {
+    this.authService.logout();
+
+    void this.router.navigate(['/login']);
+  }
 }
