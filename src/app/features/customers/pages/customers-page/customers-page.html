@@ -1,0 +1,157 @@
+<section class="flex min-h-full flex-col">
+  <app-page-header
+    title="Clientes"
+    subtitle="Consulta y administra las cuentas de clientes registrados en la librería."
+  />
+
+  <div class="mt-6">
+    <app-filters-bar
+      [filters]="filters"
+      [selectedFilter]="query.filter()"
+      [totalCount]="totalCount()"
+      searchPlaceholder="Buscar por nombre, usuario o correo"
+      tabsLabel="Filtrar clientes por estado"
+      (filterChange)="query.setFilter($event)"
+      (searchChange)="query.setSearch($event)"
+      (sortClick)="toggleSort()"
+    />
+  </div>
+
+  @if (loading()) {
+    <div
+      class="flex flex-1 items-center justify-center py-24"
+    >
+      <p class="text-sm text-ink-muted">
+        Cargando clientes...
+      </p>
+    </div>
+  } @else if (errorMessage()) {
+    <div
+      class="flex flex-1 flex-col items-center justify-center py-24 text-center"
+    >
+      <p class="text-sm font-semibold text-ink">
+        No se pudieron cargar los clientes
+      </p>
+
+      <p class="mt-1 text-xs text-ink-muted">
+        {{ errorMessage() }}
+      </p>
+
+      <button
+        type="button"
+        class="mt-4 rounded-full border border-brand px-4 py-2 text-xs font-medium text-brand transition-colors hover:bg-brand-subtle"
+        (click)="loadCustomers()"
+      >
+        Reintentar
+      </button>
+    </div>
+  } @else {
+    <div class="mt-6">
+      <app-data-table [columns]="columns">
+        @for (
+          customer of pagedCustomers();
+          track customer.id;
+          let index = $index
+          ) {
+          <tr
+            class="h-[64px] transition-colors hover:bg-table-row-hover"
+          >
+            <td
+              class="border-b border-table-divider px-5 text-sm text-ink"
+            >
+              {{
+                (query.page() - 1) *
+                query.pageSize() +
+                index +
+                1
+              }}
+            </td>
+
+            <td
+              class="border-b border-table-divider px-5"
+            >
+              <div class="flex flex-col">
+                <span
+                  class="text-sm font-semibold text-ink"
+                >
+                  {{ customer.fullName }}
+                </span>
+
+                <span
+                  class="mt-1 text-xs text-ink-muted"
+                >
+                  {{ customer.email }}
+                </span>
+              </div>
+            </td>
+
+            <td
+              class="border-b border-table-divider px-5 text-sm text-ink-muted"
+            >
+              {{ customer.username }}
+            </td>
+
+            <td
+              class="border-b border-table-divider px-5 text-sm text-ink-muted"
+            >
+              {{ formatDate(customer.createdAt) }}
+            </td>
+
+            <td
+              class="border-b border-table-divider px-5"
+            >
+              <app-badge
+                [variant]="getStatusVariant(customer.status)"
+              >
+                {{
+                  getStatusLabel(
+                    customer.status
+                  )
+                }}
+              </app-badge>
+            </td>
+
+            <td
+              class="border-b border-table-divider px-5 text-center"
+            >
+              <button
+                type="button"
+                aria-label="Opciones del cliente"
+                class="inline-flex size-9 items-center justify-center rounded-full border border-pc-border text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
+              >
+                <app-icon
+                  name="more"
+                  [size]="18"
+                />
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td
+              colspan="6"
+              class="py-20 text-center"
+            >
+              <p
+                class="text-sm font-semibold text-ink"
+              >
+                No hay clientes disponibles
+              </p>
+            </td>
+          </tr>
+        }
+      </app-data-table>
+    </div>
+
+    <div class="mt-auto pt-8">
+      <app-pagination
+        [page]="query.page()"
+        [pageSize]="query.pageSize()"
+        [totalItems]="filteredCustomers().length"
+        [pageSizeOptions]="pageSizeOptions"
+        (pageChange)="query.setPage($event)"
+        (pageSizeChange)="query.setPageSize($event)"
+      />
+    </div>
+  }
+</section>

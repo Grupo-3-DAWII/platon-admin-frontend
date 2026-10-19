@@ -1,5 +1,9 @@
 export const API_ROUTES = {
-  auth: {
-    login: '/auth/login',
+  accounts: {
+    base: '/api/accounts',
+
+    byId: (id: number) => `/api/accounts/${id}`,
+
+    validateUsername: (username: string) => `/api/accounts/validate/${username}`,
   },
 } as const;

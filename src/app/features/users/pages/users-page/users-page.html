@@ -1,0 +1,335 @@
+<div class="flex min-h-full flex-col gap-[20px]">
+  <app-page-header
+    title="Usuarios"
+    subtitle="Administra el acceso, los roles y el estado de los usuarios del sistema."
+  />
+
+  <div class="relative">
+    <app-filters-bar
+      searchPlaceholder="Buscar por nombre o correo"
+      tabsLabel="Filtrar usuarios por estado"
+      [filters]="filters"
+      [selectedFilter]="query.filter()"
+      [totalCount]="totalCount()"
+      (filterChange)="query.setFilter($event)"
+      (searchChange)="query.setSearch($event)"
+      (filterClick)="toggleFilterPanel()"
+      (sortClick)="toggleSort()"
+    />
+
+    @if (filterPanelOpen()) {
+      <div
+        class="
+          absolute
+          right-[52px]
+          top-[52px]
+          z-20
+          min-w-[190px]
+          rounded-[14px]
+          border
+          border-border
+          bg-white
+          p-2
+          shadow-lg
+        "
+      >
+        <p
+          class="
+            px-3
+            pb-2
+            pt-1
+            text-xs
+            font-semibold
+            text-ink-muted
+          "
+        >
+          Estado
+        </p>
+
+        @for (filter of filters; track filter.value) {
+          <button
+            type="button"
+            class="
+              flex
+              w-full
+              items-center
+              justify-between
+              rounded-[10px]
+              px-3
+              py-2
+              text-left
+              text-sm
+              transition-colors
+              hover:bg-surface-muted
+            "
+            [class.font-semibold]="query.filter() === filter.value"
+            [class.text-brand]="query.filter() === filter.value"
+            [class.text-ink]="query.filter() !== filter.value"
+            (click)="selectFilter(filter.value)"
+          >
+            <span>
+              {{ filter.label }}
+            </span>
+
+            @if (query.filter() === filter.value) {
+              <span
+                class="size-[6px] rounded-full bg-brand"
+                aria-hidden="true"
+              ></span>
+            }
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  @if (loading()) {
+    <div
+      class="
+        flex
+        min-h-[300px]
+        items-center
+        justify-center
+      "
+    >
+      <p class="text-sm text-ink-muted">
+        Cargando usuarios...
+      </p>
+    </div>
+  } @else if (errorMessage()) {
+    <div
+      class="
+        flex
+        min-h-[300px]
+        flex-col
+        items-center
+        justify-center
+        gap-4
+        text-center
+      "
+    >
+      <div>
+        <p class="text-base font-semibold text-ink">
+          No se pudieron cargar los usuarios
+        </p>
+
+        <p class="mt-1 text-sm text-ink-muted">
+          {{ errorMessage() }}
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="
+          rounded-full
+          border
+          border-brand
+          px-4
+          py-2
+          text-sm
+          font-medium
+          text-brand
+          transition-colors
+          hover:bg-growth-bg
+        "
+        (click)="loadUsers()"
+      >
+        Reintentar
+      </button>
+    </div>
+  } @else {
+    <app-data-table [columns]="columns">
+      @for (
+        user of pagedUsers();
+        track user.idUser;
+        let index = $index
+        ) {
+        <tr
+          class="
+            h-[64px]
+            transition-colors
+            hover:bg-table-row-hover
+          "
+        >
+          <td
+            class="
+              border-b
+              border-table-divider
+              px-5
+              py-2
+              text-base
+              font-medium
+              text-ink
+            "
+          >
+            {{
+              (query.page() - 1) *
+              query.pageSize() +
+              index +
+              1
+            }}
+          </td>
+
+          <td
+            class="
+              border-b
+              border-table-divider
+              px-5
+              py-2
+            "
+          >
+            <div class="min-w-0">
+              <p
+                class="
+                  truncate
+                  text-base
+                  font-medium
+                  text-ink
+                "
+              >
+                {{ getFullName(user) }}
+              </p>
+
+              <p
+                class="
+                  truncate
+                  text-xs
+                  text-ink-muted
+                "
+              >
+                {{ user.email }}
+              </p>
+            </div>
+          </td>
+
+          <td
+            class="
+              border-b
+              border-table-divider
+              px-5
+              py-2
+              text-base
+              text-ink-muted
+            "
+          >
+            {{ user.nro || '—' }}
+          </td>
+
+          <td
+            class="
+              border-b
+              border-table-divider
+              px-5
+              py-2
+              text-base
+              text-ink-muted
+            "
+          >
+            —
+          </td>
+
+          <td
+            class="
+              border-b
+              border-table-divider
+              px-5
+              py-2
+              text-base
+              text-ink-muted
+            "
+          >
+            —
+          </td>
+
+          <td
+            class="
+              border-b
+              border-table-divider
+              px-5
+              py-2
+              text-base
+              text-ink-muted
+            "
+          >
+            —
+          </td>
+
+          <td
+            class="
+              border-b
+              border-table-divider
+              px-5
+              py-2
+            "
+          >
+            <app-badge
+              [variant]="getStatusVariant(user.status)"
+            >
+              {{ getStatusLabel(user.status) }}
+            </app-badge>
+          </td>
+
+          <td
+            class="
+              border-b
+              border-table-divider
+              px-5
+              py-2
+              text-center
+            "
+          >
+            <button
+              type="button"
+              [attr.aria-label]="
+                'Opciones de ' + getFullName(user)
+              "
+              class="
+                inline-flex
+                size-8
+                items-center
+                justify-center
+                rounded-full
+                border
+                border-border
+                text-ink-muted
+                transition-colors
+                hover:bg-surface-muted
+                hover:text-ink
+              "
+            >
+              <app-icon
+                name="more"
+                [size]="12"
+              />
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td
+            colspan="8"
+            class="
+              py-12
+              text-center
+              text-sm
+              text-pc-grey
+            "
+          >
+            No hay usuarios para mostrar.
+          </td>
+        </tr>
+      }
+    </app-data-table>
+
+    <div class="mt-auto pt-4">
+      <app-pagination
+        [page]="query.page()"
+        [pageSize]="query.pageSize()"
+        [pageSizeOptions]="pageSizeOptions"
+        [totalItems]="filteredUsers().length"
+        (pageChange)="query.setPage($event)"
+        (pageSizeChange)="query.setPageSize($event)"
+      />
+    </div>
+  }
+</div>
