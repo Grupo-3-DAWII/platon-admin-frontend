@@ -1,5 +1,5 @@
-<nav class="flex items-center justify-between gap-4" aria-label="Paginación">
-  <div class="flex items-center gap-[14px] text-pc-grey">
+<nav class="flex min-w-0 flex-col items-stretch justify-between gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4" aria-label="Paginación">
+  <div class="flex flex-wrap items-center justify-between gap-2 text-pc-grey sm:justify-start sm:gap-[14px]">
     <label class="flex items-center gap-[5px] text-xs font-bold">
       Mostrar
       <select
@@ -13,22 +13,23 @@
       </select>
     </label>
 
-    <p class="text-[10px]">
+    <p class="text-xs sm:text-[10px]">
       Mostrando del {{ from() }} al {{ to() }} de {{ totalItems() }} registros
     </p>
   </div>
 
-  <div class="flex items-center gap-3">
+  <div class="flex items-center justify-between gap-2 sm:justify-start sm:gap-3">
     <button
       type="button"
       class="flex h-10 items-center gap-1 rounded-lg bg-white pl-2 pr-3 text-base font-medium disabled:cursor-not-allowed disabled:opacity-50"
-      [disabled]="page() <= 1"
+      aria-label="Página anterior" [disabled]="page() <= 1"
       (click)="goTo(page() - 1)"
     >
       <app-icon name="left-arrow" [size]="16" />
     </button>
 
-    <ul class="flex items-center gap-3">
+    <p class="text-xs text-ink-muted sm:hidden">Página {{ page() }} de {{ totalPages() }}</p>
+    <ul class="hidden items-center gap-3 sm:flex">
       @for (item of pages(); track item) {
       <li>
         @if (item === 'gap-start' || item === 'gap-end') {
@@ -56,7 +57,7 @@
     <button
       type="button"
       class="flex h-10 items-center gap-1 rounded-lg bg-white pl-3 pr-2 text-base font-medium disabled:cursor-not-allowed disabled:opacity-50"
-      [disabled]="page() >= totalPages()"
+      aria-label="Página siguiente" [disabled]="page() >= totalPages()"
       (click)="goTo(page() + 1)"
     >
       <app-icon name="left-arrow" [size]="16" class="rotate-180" />

@@ -17,6 +17,9 @@ export class FiltersBar<T extends string> {
   searchPlaceholder = input('Buscar...');
   tabsLabel = input('Filtrar por estado');
 
+  additionalFilterCount = input(0);
+  filterExpanded = input<boolean | null>(null);
+
   filterChange = output<T>();
   searchChange = output<string>();
   filterClick = output<void>();

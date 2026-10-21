@@ -6,4 +6,6 @@ export interface UserRequest {
   nro: string;
   direccion: string;
   idStatus: number;
+  idRole: number;
+  password?: string;
 }
