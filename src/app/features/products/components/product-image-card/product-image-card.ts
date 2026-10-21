@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { Icon } from '../../../../shared/components/icon/icon';
-import { PLACEHOLDER_COVER } from '../../services/products.service';
+import { PLACEHOLDER_COVER } from '../../models/product';
 
 @Component({
   selector: 'app-product-image-card',

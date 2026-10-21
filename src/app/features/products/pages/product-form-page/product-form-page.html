@@ -1,3 +1,13 @@
+@if (loadError()) {
+<div class="py-10 text-center text-pc-grey">
+  <p>No se pudo cargar el producto.</p>
+  <button type="button" class="mt-3 font-medium text-brand underline" (click)="retry()">
+    Reintentar
+  </button>
+</div>
+} @else if (loading()) {
+<p class="py-10 text-center text-pc-grey">Cargando producto...</p>
+} @else {
 <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-6">
   <header class="flex items-center gap-[15px]">
     <a
@@ -46,6 +56,12 @@
     </div>
   </div>
 
+  @if (saveError()) {
+  <p role="alert" class="text-sm font-medium text-danger">
+    No se pudo guardar el producto. Revisa los datos e inténtalo de nuevo.
+  </p>
+  }
+
   <div class="flex justify-between">
     <button
       type="button"
@@ -56,10 +72,11 @@
     </button>
     <button
       type="submit"
-      [disabled]="form.invalid"
+      [disabled]="form.invalid || saving()"
       class="btn border-2 border-[#BFE8FF] bg-brand text-white hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50"
     >
-      Publicar
+      {{ saving() ? 'Guardando...' : 'Publicar' }}
     </button>
   </div>
 </form>
+}

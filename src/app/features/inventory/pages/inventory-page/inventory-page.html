@@ -13,52 +13,59 @@
   <app-filters-bar
     searchPlaceholder="Buscar productos"
     [filters]="filters"
-    [selectedFilter]="query.filter()"
-    [totalCount]="totalCount()"
-    (filterChange)="query.setFilter($event)"
-    (searchChange)="query.setSearch($event)"
+    [selectedFilter]="selectedFilter()"
+    [totalCount]="totalElements()"
+    (filterChange)="onFilterChange($event)"
+    (searchChange)="onSearch($event)"
     (filterClick)="openFilterPanel()"
     (sortClick)="openSortMenu()"
   />
 
+  @if (error()) {
+  <div class="py-10 text-center text-pc-grey">
+    <p>No se pudo cargar el inventario.</p>
+    <button type="button" class="mt-3 font-medium text-brand underline" (click)="retry()">
+      Reintentar
+    </button>
+  </div>
+  } @else if (loading()) {
+  <p class="py-10 text-center text-pc-grey">Cargando inventario...</p>
+  } @else {
   <app-data-table [columns]="columns">
-    @for (item of pagedItems(); track item.product.id) { @let product = item.product;
+    @for (item of filteredItems(); track item.id) {
     <tr class="h-[56px] transition-colors hover:bg-table-row-hover">
       <td class="border-b border-table-divider p-2">
         <div class="flex items-center gap-3">
           <img
             class="size-11 shrink-0 object-contain"
-            [src]="product.imageUrl"
-            [alt]="'Portada de ' + product.name"
+            [src]="item.imageUrl"
+            [alt]="'Portada de ' + item.name"
           />
           <div>
-            <a
-              [routerLink]="['/products', product.id]"
-              class="block text-base leading-tight text-ink"
-            >
-              {{ product.name }}
+            <a [routerLink]="['/products', item.id]" class="block text-base leading-tight text-ink">
+              {{ item.name }}
             </a>
-            <p class="text-sm text-ink-muted">{{ authorFullName(product.author) }}</p>
+            <p class="text-sm text-ink-muted">{{ item.author }}</p>
           </div>
         </div>
       </td>
 
       <td class="border-b border-table-divider px-5 py-2 text-base text-ink">
-        {{ product.genre.name }}
+        {{ item.genre }}
       </td>
 
       <td class="border-b border-table-divider px-6 py-2 text-base text-ink">
-        {{ product.stock }}
+        {{ item.stock }}
       </td>
 
       <td class="border-b border-table-divider px-5 py-2">
-        <app-stock-status-badge [status]="product.status" />
+        <app-stock-status-badge [status]="item.status" />
       </td>
 
       <td class="border-b border-table-divider px-5 py-2">
         @if (item.lastMovement; as movement) {
         <p class="text-base text-ink text-sm">{{ movementSummary(movement) }}</p>
-        <p class="text-sm text-ink-muted text-xs">{{ movementDate(movement.createdAt) }}</p>
+        <p class="text-sm text-ink-muted text-xs">{{ movementDate(movement.date) }}</p>
         } @else {
         <span class="text-ink-soft">—</span>
         }
@@ -67,7 +74,7 @@
       <td class="border-b border-table-divider px-5 py-2 text-center">
         <button
           type="button"
-          [attr.aria-label]="'Opciones de ' + product.name"
+          [attr.aria-label]="'Opciones de ' + item.name"
           class="inline-flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
         >
           <app-icon name="more" [size]="12" />
@@ -80,15 +87,18 @@
     </tr>
     }
   </app-data-table>
+  }
 
+  @if (totalElements() > 0) {
   <div class="mt-auto">
     <app-pagination
-      [page]="query.page()"
-      [pageSize]="query.pageSize()"
+      [page]="page()"
+      [pageSize]="pageSize()"
       [pageSizeOptions]="pageSizeOptions"
-      [totalItems]="filteredItems().length"
-      (pageChange)="query.setPage($event)"
-      (pageSizeChange)="query.setPageSize($event)"
+      [totalItems]="totalElements()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
     />
   </div>
+  }
 </div>

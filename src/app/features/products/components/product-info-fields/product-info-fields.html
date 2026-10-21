@@ -34,26 +34,14 @@
       <label for="author" class="form-label">
         Autor <span class="text-danger" aria-hidden="true">*</span>
       </label>
-      <div class="relative">
-        <select
-          id="author"
-          formControlName="authorId"
-          required
-          class="form-control appearance-none pr-12"
-        >
-          <option [ngValue]="0" disabled>Selecciona un autor</option>
-          @for (a of authors; track a.id) {
-          <option [ngValue]="a.id">{{ authorFullName(a) }}</option>
-          }
-        </select>
-        @if (!disabled()) {
-        <app-icon
-          name="down"
-          [size]="10"
-          class="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-muted"
-        ></app-icon>
-        }
-      </div>
+      <input
+        id="author"
+        type="text"
+        formControlName="author"
+        required
+        placeholder="Ej. Gabriel García Márquez"
+        class="form-control"
+      />
     </div>
 
     <div class="flex flex-col gap-2.5">
@@ -67,8 +55,8 @@
           required
           class="form-control appearance-none pr-12"
         >
-          <option [ngValue]="0" disabled>Selecciona un editorial</option>
-          @for (e of editorials; track e.id) {
+          <option [ngValue]="0" disabled>Selecciona una editorial</option>
+          @for (e of editorials(); track e.id) {
           <option [ngValue]="e.id">{{ e.name }}</option>
           }
         </select>
@@ -93,8 +81,8 @@
           required
           class="form-control appearance-none pr-12"
         >
-          <option [ngValue]="0" disabled>Selecciona una categoría</option>
-          @for (g of genres; track g.id) {
+          <option [ngValue]="0" disabled>Selecciona un género</option>
+          @for (g of genres(); track g.id) {
           <option [ngValue]="g.id">{{ g.name }}</option>
           }
         </select>
@@ -161,18 +149,29 @@
     </div>
 
     <div class="flex flex-col gap-2.5">
-      <label for="salePrice" class="form-label">
-        Precio venta (S/) <span class="text-danger" aria-hidden="true">*</span>
+      <label for="profitMargin" class="form-label">
+        Margen de ganancia (%) <span class="text-danger" aria-hidden="true">*</span>
       </label>
       <input
-        id="salePrice"
+        id="profitMargin"
         type="number"
-        formControlName="salePrice"
+        formControlName="profitMargin"
         required
         min="0"
         step="0.01"
         inputmode="decimal"
         class="form-control [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+      />
+    </div>
+
+    <div class="flex flex-col gap-2.5 sm:col-span-2">
+      <label for="salePrice" class="form-label">Precio venta (S/)</label>
+      <input
+        id="salePrice"
+        type="text"
+        disabled
+        [value]="salePrice().toFixed(2)"
+        class="form-control"
       />
     </div>
   </div>
