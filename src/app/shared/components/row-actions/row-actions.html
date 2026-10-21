@@ -1,0 +1,18 @@
+<button #trigger type="button" [attr.aria-label]="label()" aria-haspopup="menu"
+  [attr.aria-expanded]="opened()" [attr.aria-controls]="menuId" [disabled]="!actions().length"
+  (click)="toggle()" (keydown)="onTriggerKey($event)"
+  class="inline-flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+  <app-icon name="more" [size]="12" />
+</button>
+<div #menu popover="auto" [id]="menuId" role="menu" tabindex="-1" [attr.aria-label]="label()"
+  class="actions-menu rounded-2xl border border-border bg-white p-1.5 text-ink shadow-lg"
+  (toggle)="onToggle($event)" (keydown)="onMenuKey($event)">
+  @for (action of actions(); track action.id) {
+    <button type="button" role="menuitem" [disabled]="action.disabled" (click)="choose(action)"
+      [class.text-danger]="action.danger"
+      class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-colors hover:bg-surface-muted focus-visible:bg-surface-muted focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40">
+      @if (action.icon) { <app-icon [name]="action.icon" [size]="17" /> }
+      <span>{{ action.label }}</span>
+    </button>
+  }
+</div>

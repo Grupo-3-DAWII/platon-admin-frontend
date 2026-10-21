@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
 # Compiled output
@@ -43,7 +42,6 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
-=======
 # Angular specific
 /dist/
 /out-tsc/
@@ -55,8 +53,6 @@ Thumbs.db
 
 # Node modules and dependency files
 /node_modules/
-/package-lock.json
-/yarn.lock
 
 # Environment files
 /.env
@@ -72,4 +68,3 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
->>>>>>> ee652430fba46279813cd363811769678a295037

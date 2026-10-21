@@ -4,6 +4,7 @@ import { Icon } from '../icon/icon';
 @Component({
   selector: 'app-search-input',
   standalone: true,
+  host: { class: 'block min-w-0' },
   imports: [Icon],
   templateUrl: './search-input.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

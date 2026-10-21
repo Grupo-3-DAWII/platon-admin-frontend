@@ -1,14 +1,14 @@
-<header class="flex items-center justify-between">
+<header class="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
   <div
     role="tablist"
     [attr.aria-label]="tabsLabel()"
-    class="flex rounded-[30px] bg-growth-bg p-[6px]"
+    class="flex w-fit max-w-full overflow-x-auto rounded-[30px] bg-growth-bg p-[6px]"
   >
     @for (filter of filters(); track filter.value) {
     <button
       type="button"
       role="tab"
-      class="flex items-center gap-1 rounded-[30px] px-[12px] py-[6px] text-[16px] font-medium text-pc-grey"
+      class="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-[30px] px-[12px] py-[6px] text-sm font-medium text-pc-grey sm:text-base"
       [class.selected]="selectedFilter() === filter.value"
       [attr.aria-selected]="selectedFilter() === filter.value"
       (click)="filterChange.emit(filter.value)"
@@ -20,25 +20,27 @@
     }
   </div>
 
-  <div class="flex items-center gap-[12px]">
-    <app-search-input
+  <div class="flex w-full min-w-0 items-center gap-2 xl:w-auto xl:gap-[12px]">
+    <app-search-input class="min-w-0 flex-1 xl:w-[260px] xl:flex-none"
       [placeholder]="searchPlaceholder()"
       (valueChange)="searchChange.emit($event)"
     />
 
     <button
       type="button"
-      aria-label="Filtrar"
-      class="size-[40px] rounded-full border border-pc-border"
+      [attr.aria-label]="additionalFilterCount() ? 'Filtrar, ' + additionalFilterCount() + (additionalFilterCount() === 1 ? ' filtro activo' : ' filtros activos') : 'Filtrar'"
+      [attr.aria-expanded]="filterExpanded()"
+      class="relative size-[40px] shrink-0 rounded-full border border-pc-border"
       (click)="filterClick.emit()"
     >
       <app-icon name="filter" [size]="10"></app-icon>
+      @if (additionalFilterCount()) { <span aria-hidden="true" class="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-brand text-xs font-semibold text-white">{{ additionalFilterCount() }}</span> }
     </button>
 
     <button
       type="button"
       aria-label="Ordenar"
-      class="size-[40px] rounded-full border border-pc-border"
+      class="size-[40px] shrink-0 rounded-full border border-pc-border"
       (click)="sortClick.emit()"
     >
       <app-icon name="sort" [size]="10"></app-icon>

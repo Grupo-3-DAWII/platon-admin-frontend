@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 
+import { staffGuard } from './core/auth/staff.guard';
 import { authGuard } from './core/auth/auth.guard';
+import { adminGuard } from './core/auth/admin.guard';
 import { guestGuard } from './core/auth/guest.guard';
 import { AdminLayout } from './layouts/admin-layout/admin-layout';
 import { AuthLayout } from './layouts/auth-layout/auth-layout';
@@ -23,6 +25,7 @@ export const routes: Routes = [
     path: '',
     component: AdminLayout,
     canActivate: [authGuard],
+    canActivateChild: [staffGuard],
     children: [
       {
         path: '',
@@ -32,6 +35,7 @@ export const routes: Routes = [
 
       {
         path: 'dashboard',
+        canActivate: [adminGuard],
         loadComponent: () => import('./features/dashboard/dashboard').then((m) => m.Dashboard),
       },
 
@@ -65,12 +69,14 @@ export const routes: Routes = [
 
       {
         path: 'reports',
+        canActivate: [adminGuard],
         loadChildren: () =>
           import('./features/reports/reports.routes').then((m) => m.REPORTS_ROUTES),
       },
 
       {
         path: 'users',
+        canActivate: [adminGuard],
         loadChildren: () => import('./features/users/users.routes').then((m) => m.USERS_ROUTES),
       },
 

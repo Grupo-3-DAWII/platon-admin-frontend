@@ -4,6 +4,14 @@ export interface LoginRequest {
 }
 
 export interface AuthSession {
-  username: string;
-  authorization: string;
+  accessToken: string;
+  tokenType: 'Bearer';
+  expiresAt: string;
+  user: {
+    idUser: number;
+    username: string;
+    name: string;
+    lastname: string;
+    role: 'ADMIN' | 'SELLER';
+  };
 }

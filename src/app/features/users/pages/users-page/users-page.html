@@ -1,14 +1,23 @@
 <div class="flex min-h-full flex-col gap-[20px]">
-  <app-page-header
-    title="Usuarios"
-    subtitle="Administra el acceso, los roles y el estado de los usuarios del sistema."
-  />
+  <app-page-header title="Usuarios">
+    <button type="button" (click)="openUserDialog()"
+      [disabled]="loading() || !!catalogError() || !roles().length"
+      class="flex w-full justify-center gap-[15px] rounded-[30px] bg-brand px-[16px] py-[12px] text-white disabled:opacity-50 sm:w-auto">
+      <app-icon name="add" [size]="16" />
+      <span class="text-[14px] font-medium">Nuevo vendedor</span>
+    </button>
+  </app-page-header>
+
+  @if (notice()) { <p class="text-sm text-ink-muted" role="status">{{ notice() }}</p> }
+  @if (catalogError()) { <p class="text-sm text-danger" role="alert">{{ catalogError() }}</p> }
 
   <div class="relative">
     <app-filters-bar
       searchPlaceholder="Buscar por nombre o correo"
       tabsLabel="Filtrar usuarios por estado"
       [filters]="filters"
+      [additionalFilterCount]="activeFilterCount()"
+      [filterExpanded]="filterPanelOpen()"
       [selectedFilter]="query.filter()"
       [totalCount]="totalCount()"
       (filterChange)="query.setFilter($event)"
@@ -18,318 +27,174 @@
     />
 
     @if (filterPanelOpen()) {
-      <div
-        class="
-          absolute
-          right-[52px]
-          top-[52px]
-          z-20
-          min-w-[190px]
-          rounded-[14px]
-          border
-          border-border
-          bg-white
-          p-2
-          shadow-lg
-        "
-      >
-        <p
-          class="
-            px-3
-            pb-2
-            pt-1
-            text-xs
-            font-semibold
-            text-ink-muted
-          "
-        >
-          Estado
-        </p>
-
-        @for (filter of filters; track filter.value) {
-          <button
-            type="button"
-            class="
-              flex
-              w-full
-              items-center
-              justify-between
-              rounded-[10px]
-              px-3
-              py-2
-              text-left
-              text-sm
-              transition-colors
-              hover:bg-surface-muted
-            "
-            [class.font-semibold]="query.filter() === filter.value"
-            [class.text-brand]="query.filter() === filter.value"
-            [class.text-ink]="query.filter() !== filter.value"
-            (click)="selectFilter(filter.value)"
-          >
-            <span>
-              {{ filter.label }}
-            </span>
-
-            @if (query.filter() === filter.value) {
-              <span
-                class="size-[6px] rounded-full bg-brand"
-                aria-hidden="true"
-              ></span>
-            }
-          </button>
+      <app-account-filters kind="users" [value]="advancedFilters()" (applyFilters)="applyAdvancedFilters($event)" (dismiss)="filterPanelOpen.set(false)" />
+    }
+    @if (activeFilterCount()) {
+      <div class="mt-3 flex flex-wrap items-center gap-3 text-sm" role="status">
+        <span>{{ filteredUsers().length }} {{ filteredUsers().length === 1 ? 'resultado' : 'resultados' }} · {{ activeFilterCount() }} {{ activeFilterCount() === 1 ? 'filtro adicional' : 'filtros adicionales' }}</span>
+        @for (label of activeFilterLabels(); track label) {
+          <span class="rounded-full bg-growth-bg px-3 py-1 text-xs text-brand">{{ label }}</span>
         }
+        <button type="button" (click)="clearAdvancedFilters()" class="font-medium text-brand underline underline-offset-4">Limpiar filtros adicionales</button>
       </div>
     }
   </div>
 
+
   @if (loading()) {
-    <div
-      class="
-        flex
-        min-h-[300px]
-        items-center
-        justify-center
-      "
-    >
-      <p class="text-sm text-ink-muted">
-        Cargando usuarios...
-      </p>
+    <div class="flex min-h-[300px] items-center justify-center">
+      <p class="text-sm text-ink-muted">Cargando usuarios...</p>
     </div>
   } @else if (errorMessage()) {
-    <div
-      class="
-        flex
-        min-h-[300px]
-        flex-col
-        items-center
-        justify-center
-        gap-4
-        text-center
-      "
-    >
+    <div class="flex min-h-[300px] flex-col items-center justify-center gap-4 text-center">
       <div>
-        <p class="text-base font-semibold text-ink">
-          No se pudieron cargar los usuarios
-        </p>
-
-        <p class="mt-1 text-sm text-ink-muted">
-          {{ errorMessage() }}
-        </p>
+        <p class="text-base font-semibold text-ink">No se pudieron cargar los usuarios</p>
+        <p class="mt-1 text-sm text-ink-muted">{{ errorMessage() }}</p>
       </div>
-
-      <button
-        type="button"
-        class="
-          rounded-full
-          border
-          border-brand
-          px-4
-          py-2
-          text-sm
-          font-medium
-          text-brand
-          transition-colors
-          hover:bg-growth-bg
-        "
-        (click)="loadUsers()"
-      >
-        Reintentar
-      </button>
+      <button type="button" (click)="loadUsers()"
+        class="rounded-full border border-brand px-4 py-2 text-sm font-medium text-brand transition-colors hover:bg-growth-bg">Reintentar</button>
     </div>
   } @else {
-    <app-data-table [columns]="columns">
-      @for (
-        user of pagedUsers();
-        track user.idUser;
-        let index = $index
-        ) {
-        <tr
-          class="
-            h-[64px]
-            transition-colors
-            hover:bg-table-row-hover
-          "
-        >
-          <td
-            class="
-              border-b
-              border-table-divider
-              px-5
-              py-2
-              text-base
-              font-medium
-              text-ink
-            "
-          >
-            {{
-              (query.page() - 1) *
-              query.pageSize() +
-              index +
-              1
-            }}
-          </td>
-
-          <td
-            class="
-              border-b
-              border-table-divider
-              px-5
-              py-2
-            "
-          >
+    <div class="grid gap-3 sm:grid-cols-2 md:hidden">
+      @for (user of pagedUsers(); track user.idUser) {
+        <article class="min-w-0 rounded-2xl border border-border bg-white p-4">
+          <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
-              <p
-                class="
-                  truncate
-                  text-base
-                  font-medium
-                  text-ink
-                "
-              >
-                {{ getFullName(user) }}
-              </p>
-
-              <p
-                class="
-                  truncate
-                  text-xs
-                  text-ink-muted
-                "
-              >
-                {{ user.email }}
-              </p>
+              <h2 class="break-words text-base font-semibold text-ink">{{ getFullName(user) }}</h2>
+              <p class="mt-1 break-all text-sm text-ink-muted">{{ user.email }}</p>
             </div>
+            <app-row-actions class="shrink-0" [label]="'Opciones de ' + getFullName(user)" [actions]="userActions(user)" (selected)="handleAction($event, user)" />
+          </div>
+          <div class="mt-3"><app-badge [variant]="getStatusVariant(user.status)">{{ getStatusLabel(user.status) }}</app-badge></div>
+          <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
+            <div class="min-w-0"><dt class="text-xs text-ink-muted">Rol</dt><dd>{{ user.role === 'ADMIN' ? 'Administrador' : 'Vendedor' }}</dd></div>
+            <div class="min-w-0"><dt class="text-xs text-ink-muted">Contacto</dt><dd class="break-words">{{ user.nro || '—' }}</dd></div>
+            <div class="min-w-0"><dt class="text-xs text-ink-muted">Usuario</dt><dd class="break-all">{{ user.username }}</dd></div>
+            <div class="min-w-0"><dt class="text-xs text-ink-muted">Registro</dt><dd>{{ user.createdAt ? (user.createdAt | date: 'dd-MM-yyyy') : '—' }}</dd></div>
+          </dl>
+        </article>
+      } @empty { <p class="py-10 text-center text-sm text-ink-muted">No hay usuarios para mostrar.</p> }
+    </div>
+    <app-data-table class="hidden min-w-0 md:block" [columns]="columns">
+      @for (user of pagedUsers(); track user.idUser; let index = $index) {
+        <tr class="h-[56px] transition-colors hover:bg-table-row-hover">
+          <td class="border-b border-table-divider px-5 py-2 text-base font-medium text-ink">
+            {{ (query.page() - 1) * query.pageSize() + index + 1 }}
           </td>
-
-          <td
-            class="
-              border-b
-              border-table-divider
-              px-5
-              py-2
-              text-base
-              text-ink-muted
-            "
-          >
-            {{ user.nro || '—' }}
+          <td class="border-b border-table-divider px-5 py-2">
+            <p class="text-base font-medium leading-tight text-ink">{{ getFullName(user) }}</p>
+            <p class="text-xs text-ink-muted">{{ user.email }}</p>
           </td>
-
-          <td
-            class="
-              border-b
-              border-table-divider
-              px-5
-              py-2
-              text-base
-              text-ink-muted
-            "
-          >
-            —
+          <td class="border-b border-table-divider px-5 py-2 text-base text-ink">{{ user.nro || '—' }}</td>
+          <td class="border-b border-table-divider px-5 py-2 text-base text-ink">{{ user.role === 'ADMIN' ? 'Administrador' : 'Vendedor' }}</td>
+          <td class="border-b border-table-divider px-5 py-2 text-base text-ink">{{ user.createdAt ? (user.createdAt | date: 'dd-MM-yyyy') : '—' }}</td>
+          <td class="border-b border-table-divider px-5 py-2">
+            <app-badge [variant]="getStatusVariant(user.status)">{{ getStatusLabel(user.status) }}</app-badge>
           </td>
-
-          <td
-            class="
-              border-b
-              border-table-divider
-              px-5
-              py-2
-              text-base
-              text-ink-muted
-            "
-          >
-            —
-          </td>
-
-          <td
-            class="
-              border-b
-              border-table-divider
-              px-5
-              py-2
-              text-base
-              text-ink-muted
-            "
-          >
-            —
-          </td>
-
-          <td
-            class="
-              border-b
-              border-table-divider
-              px-5
-              py-2
-            "
-          >
-            <app-badge
-              [variant]="getStatusVariant(user.status)"
-            >
-              {{ getStatusLabel(user.status) }}
-            </app-badge>
-          </td>
-
-          <td
-            class="
-              border-b
-              border-table-divider
-              px-5
-              py-2
-              text-center
-            "
-          >
-            <button
-              type="button"
-              [attr.aria-label]="
-                'Opciones de ' + getFullName(user)
-              "
-              class="
-                inline-flex
-                size-8
-                items-center
-                justify-center
-                rounded-full
-                border
-                border-border
-                text-ink-muted
-                transition-colors
-                hover:bg-surface-muted
-                hover:text-ink
-              "
-            >
-              <app-icon
-                name="more"
-                [size]="12"
-              />
-            </button>
+          <td class="border-b border-table-divider px-5 py-2 text-center">
+            <app-row-actions [label]="'Opciones de ' + getFullName(user)" [actions]="userActions(user)"
+              (selected)="handleAction($event, user)" />
           </td>
         </tr>
       } @empty {
-        <tr>
-          <td
-            colspan="8"
-            class="
-              py-12
-              text-center
-              text-sm
-              text-pc-grey
-            "
-          >
-            No hay usuarios para mostrar.
-          </td>
-        </tr>
+        <tr><td colspan="7" class="py-10 text-center text-pc-grey">No hay usuarios para mostrar.</td></tr>
       }
     </app-data-table>
-
-    <div class="mt-auto pt-4">
-      <app-pagination
-        [page]="query.page()"
-        [pageSize]="query.pageSize()"
-        [pageSizeOptions]="pageSizeOptions"
-        [totalItems]="filteredUsers().length"
-        (pageChange)="query.setPage($event)"
-        (pageSizeChange)="query.setPageSize($event)"
-      />
+    <div class="mt-auto">
+      <app-pagination [page]="query.page()" [pageSize]="query.pageSize()" [pageSizeOptions]="pageSizeOptions"
+        [totalItems]="filteredUsers().length" (pageChange)="query.setPage($event)" (pageSizeChange)="query.setPageSize($event)" />
     </div>
   }
 </div>
+
+<dialog #userDialog aria-labelledby="user-dialog-title" (cancel)="closeUserDialog($event)"
+  class="m-auto w-[min(94vw,640px)] max-h-[90dvh] overflow-y-auto rounded-3xl border border-border bg-white p-5 text-ink sm:p-7 shadow-xl backdrop:bg-black/40">
+  <form [formGroup]="userForm" (ngSubmit)="saveUser()">
+    <div class="mb-6 flex items-start justify-between gap-4">
+      <div>
+        <h2 id="user-dialog-title" class="text-xl font-semibold">{{ editingUser() ? 'Editar usuario' : 'Nuevo vendedor' }}</h2>
+        <p class="mt-1 text-sm text-ink-muted">{{ editingUser() ? 'Actualiza los datos y el acceso de esta cuenta.' : 'Crea una cuenta para el personal de la librería.' }}</p>
+      </div>
+      <button type="button" aria-label="Cerrar formulario" class="rounded-full px-3 py-1 text-xl text-ink-muted"
+        [disabled]="saving()" (click)="closeUserDialog()">×</button>
+    </div>
+    <fieldset [disabled]="saving()" class="grid gap-4 sm:grid-cols-2">
+      @for (field of userFields; track field.name) {
+        <div>
+          <label [for]="'user-' + field.name" class="mb-1.5 block text-sm font-medium">{{ field.label }}</label>
+          <input [id]="'user-' + field.name" [type]="field.type" [formControlName]="field.name" [appSanitize]="field.kind" [attr.maxlength]="field.max"
+            [attr.aria-invalid]="fieldInvalid(field.name)" [class.border-danger]="fieldInvalid(field.name)" [attr.aria-describedby]="fieldInvalid(field.name) ? 'error-' + field.name : null"
+            class="w-full rounded-xl border border-border px-3 py-2.5 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20" />
+          @if (field.name === 'username' && !editingUser() && !fieldInvalid(field.name)) {
+            <p class="mt-1 text-xs text-ink-muted">Puedes cambiar el usuario sugerido.</p>
+          }
+          @if (fieldInvalid(field.name)) {
+            <p [id]="'error-' + field.name" class="mt-1 text-xs text-danger">{{ fieldError(field.name) }}</p>
+          }
+        </div>
+      }
+      <div>
+        <label for="user-status" class="mb-1.5 block text-sm font-medium">Estado</label>
+        <select id="user-status" formControlName="idStatus" class="w-full rounded-xl border border-border px-3 py-2.5 text-sm">
+          @for (status of statuses(); track status.idStatus) {
+            <option [ngValue]="status.idStatus" [disabled]="editingUser()?.role === 'ADMIN' && status.name.toLowerCase() !== 'active'">{{ getStatusLabel(status.name) }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label for="user-role" class="mb-1.5 block text-sm font-medium">Rol</label>
+        <select id="user-role" formControlName="idRole" class="w-full rounded-xl border border-border px-3 py-2.5 text-sm">
+          @for (role of roles(); track role.idRole) {
+            <option [ngValue]="role.idRole">{{ role.name.toUpperCase() === 'ADMIN' ? 'Administrador' : 'Vendedor' }}</option>
+          }
+        </select>
+      </div>
+      <div class="sm:col-span-2">
+        <label for="user-password" class="mb-1.5 block text-sm font-medium">{{ editingUser() ? 'Nueva contraseña (opcional)' : 'Contraseña' }}</label>
+        <input id="user-password" type="password" autocomplete="new-password" formControlName="password" minlength="10" maxlength="72"
+          [attr.aria-invalid]="fieldInvalid('password')" aria-describedby="password-help"
+          class="w-full rounded-xl border border-border px-3 py-2.5 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20" />
+        <p id="password-help" class="mt-1 text-xs" [class.text-danger]="fieldInvalid('password')" [class.text-ink-muted]="!fieldInvalid('password')">
+          {{ fieldInvalid('password') ? fieldError('password') : (editingUser() ? 'Déjala vacía para conservarla.' : 'Mínimo 10 caracteres.') }}
+        </p>
+      </div>
+    </fieldset>
+    @if (editingUser()) {
+      <p class="mt-4 text-xs text-ink-muted">Si editas tu propia cuenta, tendrás que iniciar sesión nuevamente.</p>
+    }
+    @if (formError()) { <p role="alert" class="mt-4 text-sm text-danger">{{ formError() }}</p> }
+    <div class="mt-6 flex justify-end gap-3">
+      <button type="button" class="rounded-full border border-border px-5 py-2.5 text-sm font-medium" [disabled]="saving()" (click)="closeUserDialog()">Cancelar</button>
+      <button type="submit" class="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50" [disabled]="saving()">{{ saving() ? 'Guardando…' : 'Guardar usuario' }}</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog #deactivateDialog aria-labelledby="deactivate-title" (cancel)="closeDeactivate($event)"
+  class="m-auto w-[min(94vw,440px)] rounded-3xl border border-border bg-white p-5 text-ink sm:p-7 shadow-xl backdrop:bg-black/40">
+  <h2 id="deactivate-title" class="text-xl font-semibold">Desactivar usuario</h2>
+  <p class="mt-3 text-sm text-ink-muted">{{ deactivatingUser()?.name }} no podrá iniciar una nueva sesión. Sus datos y el historial se conservarán.</p>
+  @if (formError()) { <p role="alert" class="mt-4 text-sm text-danger">{{ formError() }}</p> }
+  <div class="mt-6 flex justify-end gap-3">
+    <button type="button" class="rounded-full border border-border px-4 py-2 text-sm" [disabled]="saving()" (click)="closeDeactivate()">Cancelar</button>
+    <button type="button" class="rounded-full bg-danger px-4 py-2 text-sm font-semibold text-white disabled:opacity-50" [disabled]="saving()" (click)="confirmDeactivate()">{{ saving() ? 'Desactivando…' : 'Desactivar' }}</button>
+  </div>
+</dialog>
+
+<dialog #viewDialog aria-labelledby="view-user-title"
+  class="m-auto w-[min(94vw,560px)] rounded-3xl border border-border bg-white p-5 text-ink sm:p-7 shadow-xl backdrop:bg-black/40">
+  @if (viewedUser(); as user) {
+    <h2 id="view-user-title" class="text-xl font-semibold">{{ getFullName(user) }}</h2>
+    <p class="mt-1 text-sm text-ink-muted">Datos del usuario</p>
+    <dl class="mt-5 grid grid-cols-[auto_1fr] gap-x-5 gap-y-3 text-sm">
+      <dt>Usuario</dt><dd class="min-w-0 break-words">{{ user.username }}</dd>
+      <dt>Rol</dt><dd class="min-w-0 break-words">{{ user.role === 'ADMIN' ? 'Administrador' : 'Vendedor' }}</dd>
+      <dt>Correo</dt><dd class="break-all">{{ user.email }}</dd>
+      <dt>Contacto</dt><dd class="min-w-0 break-words">{{ user.nro || '—' }}</dd>
+      <dt>Dirección</dt><dd class="min-w-0 break-words">{{ user.direccion || '—' }}</dd>
+      <dt>Estado</dt><dd class="min-w-0 break-words">{{ getStatusLabel(user.status) }}</dd>
+      <dt>Registro</dt><dd class="min-w-0 break-words">{{ user.createdAt ? (user.createdAt | date: 'dd/MM/yyyy') : '—' }}</dd>
+    </dl>
+    <button type="button" (click)="closeView()" class="mt-6 rounded-full bg-brand px-5 py-2 text-sm text-white">Cerrar</button>
+  }
+</dialog>

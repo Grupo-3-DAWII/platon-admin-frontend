@@ -1,0 +1,8 @@
+.actions-menu {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  min-width: 176px;
+  max-width: calc(100vw - 16px);
+}
+.actions-menu::backdrop { background: transparent; }

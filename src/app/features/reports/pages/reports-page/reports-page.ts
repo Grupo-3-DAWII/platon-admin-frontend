@@ -127,6 +127,9 @@ export class ReportsPage {
   readonly chartOptions: SalesChartOptions = {
     chart: {
       type: 'area',
+      width: '100%',
+      redrawOnParentResize: true,
+      redrawOnWindowResize: true,
       height: 280,
 
       toolbar: {

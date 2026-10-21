@@ -47,10 +47,14 @@ export class LoginPage {
       )
       .subscribe({
         next: () => {
-          void this.router.navigate(['/dashboard']);
+          void this.router.navigate([this.authService.homeRoute()]);
         },
 
         error: (error: HttpErrorResponse) => {
+          if (error.status === 403) {
+            this.errorMessage.set(error.error?.message ?? 'Esta cuenta no tiene acceso al panel interno.');
+            return;
+          }
           if (error.status === 401) {
             this.errorMessage.set('Usuario o contraseña incorrectos.');
             return;

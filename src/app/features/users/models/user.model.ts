@@ -1,11 +1,3 @@
-export interface User {
-  idUser: number;
-  name: string;
-  lastname: string;
-  username: string;
-  email: string;
-  nro: string;
-  direccion: string;
-  idStatus: number;
-  status: string;
-}
+import { AccountRecord } from '../../../core/configuration/account-api.service';
+export type User = AccountRecord;
+export interface AccountStatus { idStatus: number; name: string; }

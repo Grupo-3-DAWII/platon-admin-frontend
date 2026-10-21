@@ -1,0 +1,14 @@
+{
+  "/api/v1/login": {
+    "target": "http://localhost:8080",
+    "secure": false
+  },
+  "/api/accounts": {
+    "target": "http://localhost:8080",
+    "secure": false
+  },
+  "/api/roles": {
+    "target": "http://localhost:8083",
+    "secure": false
+  }
+}

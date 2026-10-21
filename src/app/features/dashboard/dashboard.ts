@@ -1,3 +1,4 @@
+import { RouterLink } from '@angular/router';
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import {
   ApexAxisChartSeries,
@@ -52,11 +53,13 @@ function getCssVariable(name: string): string {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [Icon, Badge, DataTable, NgApexchartsModule],
+  imports: [RouterLink, Icon, Badge, DataTable, NgApexchartsModule],
   templateUrl: './dashboard.html',
+  styleUrl: './dashboard.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Dashboard {
+  readonly salesTotalLabel = 'S/ 25,403';
   readonly selectedWeek = signal<WeekPeriod>('current');
 
   readonly recentOrdersColumns: TableColumn[] = [
@@ -68,7 +71,7 @@ export class Dashboard {
     {
       key: 'customer',
       label: 'Cliente',
-      width: '24%',
+      width: '25%',
     },
     {
       key: 'status',
@@ -78,18 +81,12 @@ export class Dashboard {
     {
       key: 'total',
       label: 'Total',
-      width: '16%',
+      width: '19%',
     },
     {
       key: 'date',
       label: 'Fecha',
-      width: '18%',
-    },
-    {
-      key: 'actions',
-      label: 'Acciones',
-      width: '6%',
-      align: 'center',
+      width: '20%',
     },
   ];
 
@@ -107,6 +104,9 @@ export class Dashboard {
   readonly chartOptions: Omit<ChartOptions, 'series'> = {
     chart: {
       type: 'area',
+      width: '100%',
+      redrawOnParentResize: true,
+      redrawOnWindowResize: true,
       height: 330,
       toolbar: {
         show: false,
@@ -222,6 +222,9 @@ export class Dashboard {
 
     chart: {
       type: 'bar',
+      width: '100%',
+      redrawOnParentResize: true,
+      redrawOnWindowResize: true,
       height: 285,
       toolbar: {
         show: false,

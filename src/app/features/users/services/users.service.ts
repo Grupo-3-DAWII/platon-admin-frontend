@@ -1,21 +1,28 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { AccountApiService } from '../../../core/configuration/account-api.service';
+import { ACCOUNT_STATUSES } from '../../../core/configuration/account.config';
 
 import { environment } from '../../../../environments/environment';
 import { API_ROUTES } from '../../../core/configuration/api.routes';
 import { UserRequest } from '../models/user-request.model';
-import { User } from '../models/user.model';
+import { AccountStatus, User } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UsersService {
   private readonly http = inject(HttpClient);
+  private readonly accounts = inject(AccountApiService);
   private readonly apiUrl = environment.apiUrl;
 
+  getStatuses(): Observable<AccountStatus[]> {
+    return of(ACCOUNT_STATUSES.map((status) => ({ ...status })));
+  }
+
   getUsers(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}${API_ROUTES.accounts.base}`);
+    return this.accounts.getAccounts(true);
   }
 
   getUserById(id: number): Observable<User> {
@@ -28,10 +35,6 @@ export class UsersService {
 
   updateUser(id: number, request: UserRequest): Observable<User> {
     return this.http.put<User>(`${this.apiUrl}${API_ROUTES.accounts.byId(id)}`, request);
-  }
-
-  deleteUser(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}${API_ROUTES.accounts.byId(id)}`);
   }
 
   validateUsername(username: string): Observable<boolean> {

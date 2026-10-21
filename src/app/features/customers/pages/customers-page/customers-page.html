@@ -1,157 +1,187 @@
-<section class="flex min-h-full flex-col">
-  <app-page-header
-    title="Clientes"
-    subtitle="Consulta y administra las cuentas de clientes registrados en la librería."
-  />
+<div class="flex min-h-full flex-col gap-[20px]">
+  <app-page-header title="Clientes" class="[&>header]:min-h-[45px]">
+    @if (canManageCustomers()) {
+      <button type="button" (click)="openNewCustomer()" [disabled]="loading() || saving() || openingCustomer()"
+        class="flex w-full justify-center gap-[15px] rounded-[30px] bg-brand px-[16px] py-[12px] text-white disabled:opacity-50 sm:w-auto">
+        <app-icon name="add" [size]="16" />
+        <span class="text-[14px] font-medium">{{ openingCustomer() ? 'Cargando…' : 'Nuevo cliente' }}</span>
+      </button>
+    }
+  </app-page-header>
 
-  <div class="mt-6">
+  @if (notice()) { <p class="text-sm text-ink-muted" role="status">{{ notice() }}</p> }
+
+  <div class="relative">
     <app-filters-bar
+      searchPlaceholder="Buscar clientes"
+      tabsLabel="Filtrar clientes por estado"
       [filters]="filters"
+      [additionalFilterCount]="activeFilterCount()"
+      [filterExpanded]="filterPanelOpen()"
       [selectedFilter]="query.filter()"
       [totalCount]="totalCount()"
-      searchPlaceholder="Buscar por nombre, usuario o correo"
-      tabsLabel="Filtrar clientes por estado"
       (filterChange)="query.setFilter($event)"
       (searchChange)="query.setSearch($event)"
+      (filterClick)="toggleFilterPanel()"
       (sortClick)="toggleSort()"
     />
+
+    @if (filterPanelOpen()) {
+      <app-account-filters kind="customers" [value]="advancedFilters()" (applyFilters)="applyAdvancedFilters($event)" (dismiss)="filterPanelOpen.set(false)" />
+    }
+    @if (activeFilterCount()) {
+      <div class="mt-3 flex flex-wrap items-center gap-3 text-sm" role="status">
+        <span>{{ filteredCustomers().length }} {{ filteredCustomers().length === 1 ? 'resultado' : 'resultados' }} · {{ activeFilterCount() }} {{ activeFilterCount() === 1 ? 'filtro adicional' : 'filtros adicionales' }}</span>
+        @for (label of activeFilterLabels(); track label) {
+          <span class="rounded-full bg-growth-bg px-3 py-1 text-xs text-brand">{{ label }}</span>
+        }
+        <button type="button" (click)="clearAdvancedFilters()" class="font-medium text-brand underline underline-offset-4">Limpiar filtros adicionales</button>
+      </div>
+    }
   </div>
 
+
   @if (loading()) {
-    <div
-      class="flex flex-1 items-center justify-center py-24"
-    >
-      <p class="text-sm text-ink-muted">
-        Cargando clientes...
-      </p>
+    <div class="flex min-h-[300px] items-center justify-center">
+      <p class="text-sm text-ink-muted">Cargando clientes...</p>
     </div>
   } @else if (errorMessage()) {
-    <div
-      class="flex flex-1 flex-col items-center justify-center py-24 text-center"
-    >
-      <p class="text-sm font-semibold text-ink">
-        No se pudieron cargar los clientes
-      </p>
-
-      <p class="mt-1 text-xs text-ink-muted">
-        {{ errorMessage() }}
-      </p>
-
-      <button
-        type="button"
-        class="mt-4 rounded-full border border-brand px-4 py-2 text-xs font-medium text-brand transition-colors hover:bg-brand-subtle"
-        (click)="loadCustomers()"
-      >
-        Reintentar
-      </button>
+    <div class="flex min-h-[300px] flex-col items-center justify-center gap-4 text-center">
+      <div>
+        <p class="text-base font-semibold text-ink">No se pudieron cargar los clientes</p>
+        <p class="mt-1 text-sm text-ink-muted">{{ errorMessage() }}</p>
+      </div>
+      <button type="button" (click)="loadCustomers()"
+        class="rounded-full border border-brand px-4 py-2 text-sm font-medium text-brand transition-colors hover:bg-growth-bg">Reintentar</button>
     </div>
   } @else {
-    <div class="mt-6">
-      <app-data-table [columns]="columns">
-        @for (
-          customer of pagedCustomers();
-          track customer.id;
-          let index = $index
-          ) {
-          <tr
-            class="h-[64px] transition-colors hover:bg-table-row-hover"
-          >
-            <td
-              class="border-b border-table-divider px-5 text-sm text-ink"
-            >
-              {{
-                (query.page() - 1) *
-                query.pageSize() +
-                index +
-                1
-              }}
-            </td>
-
-            <td
-              class="border-b border-table-divider px-5"
-            >
-              <div class="flex flex-col">
-                <span
-                  class="text-sm font-semibold text-ink"
-                >
-                  {{ customer.fullName }}
-                </span>
-
-                <span
-                  class="mt-1 text-xs text-ink-muted"
-                >
-                  {{ customer.email }}
-                </span>
-              </div>
-            </td>
-
-            <td
-              class="border-b border-table-divider px-5 text-sm text-ink-muted"
-            >
-              {{ customer.username }}
-            </td>
-
-            <td
-              class="border-b border-table-divider px-5 text-sm text-ink-muted"
-            >
-              {{ formatDate(customer.createdAt) }}
-            </td>
-
-            <td
-              class="border-b border-table-divider px-5"
-            >
-              <app-badge
-                [variant]="getStatusVariant(customer.status)"
-              >
-                {{
-                  getStatusLabel(
-                    customer.status
-                  )
-                }}
-              </app-badge>
-            </td>
-
-            <td
-              class="border-b border-table-divider px-5 text-center"
-            >
-              <button
-                type="button"
-                aria-label="Opciones del cliente"
-                class="inline-flex size-9 items-center justify-center rounded-full border border-pc-border text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
-              >
-                <app-icon
-                  name="more"
-                  [size]="18"
-                />
-              </button>
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td
-              colspan="6"
-              class="py-20 text-center"
-            >
-              <p
-                class="text-sm font-semibold text-ink"
-              >
-                No hay clientes disponibles
-              </p>
-            </td>
-          </tr>
-        }
-      </app-data-table>
+    <div class="grid gap-3 sm:grid-cols-2 md:hidden">
+      @for (customer of pagedCustomers(); track customer.id) {
+        <article class="min-w-0 rounded-2xl border border-border bg-white p-4">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <h2 class="break-words text-base font-semibold text-ink">{{ customer.fullName }}</h2>
+              <p class="mt-1 break-all text-sm text-ink-muted">{{ customer.email }}</p>
+            </div>
+            <app-row-actions class="shrink-0" [label]="'Opciones de ' + customer.fullName" [actions]="customerActions(customer)" (selected)="handleAction($event, customer)" />
+          </div>
+          <div class="mt-3"><app-badge [variant]="getStatusVariant(customer.status)">{{ getStatusLabel(customer.status) }}</app-badge></div>
+          <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
+            <div class="min-w-0"><dt class="text-xs text-ink-muted">Usuario</dt><dd class="break-all">{{ customer.username }}</dd></div>
+            <div class="min-w-0"><dt class="text-xs text-ink-muted">Registro</dt><dd>{{ customer.createdAt ? (customer.createdAt | date: 'dd-MM-yyyy') : '—' }}</dd></div>
+            <div class="min-w-0"><dt class="text-xs text-ink-muted">Compras pagadas</dt><dd>{{ customer.paidOrderCount }}</dd></div>
+            <div class="min-w-0"><dt class="text-xs text-ink-muted">Total compras</dt><dd>{{ customer.totalPurchases | currency: 'PEN' : 'S/ ' }}</dd></div>
+          </dl>
+        </article>
+      } @empty { <p class="py-10 text-center text-sm text-ink-muted">No hay clientes para mostrar.</p> }
     </div>
-
-    <div class="mt-auto pt-8">
-      <app-pagination
-        [page]="query.page()"
-        [pageSize]="query.pageSize()"
-        [totalItems]="filteredCustomers().length"
-        [pageSizeOptions]="pageSizeOptions"
-        (pageChange)="query.setPage($event)"
-        (pageSizeChange)="query.setPageSize($event)"
-      />
+    <app-data-table class="hidden min-w-0 md:block" [columns]="columns">
+      @for (customer of pagedCustomers(); track customer.id; let index = $index) {
+        <tr class="h-[56px] transition-colors hover:bg-table-row-hover">
+          <td class="border-b border-table-divider px-5 py-2 text-base font-medium text-ink">
+            {{ (query.page() - 1) * query.pageSize() + index + 1 }}
+          </td>
+          <td class="border-b border-table-divider px-5 py-2">
+            <p class="text-base font-medium leading-tight text-ink">{{ customer.fullName }}</p>
+            <p class="text-xs text-ink-muted">{{ customer.email }}</p>
+          </td>
+          <td class="border-b border-table-divider px-5 py-2 text-base text-ink">{{ customer.username }}</td>
+          <td class="border-b border-table-divider px-5 py-2 text-base text-ink">{{ customer.createdAt ? (customer.createdAt | date: 'dd-MM-yyyy') : '—' }}</td>
+          <td class="border-b border-table-divider px-5 py-2">
+            <app-badge [variant]="getStatusVariant(customer.status)">{{ getStatusLabel(customer.status) }}</app-badge>
+          </td>
+          <td class="border-b border-table-divider px-5 py-2 text-base text-ink">{{ customer.paidOrderCount }}</td>
+          <td class="border-b border-table-divider px-5 py-2 text-base text-ink">{{ customer.totalPurchases | currency: 'PEN' : 'S/ ' }}</td>
+          <td class="border-b border-table-divider px-5 py-2 text-center">
+            <app-row-actions [label]="'Opciones de ' + customer.fullName" [actions]="customerActions(customer)"
+              (selected)="handleAction($event, customer)" />
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="8" class="py-10 text-center text-pc-grey">No hay clientes para mostrar.</td></tr>
+      }
+    </app-data-table>
+    <div class="mt-auto">
+      <app-pagination [page]="query.page()" [pageSize]="query.pageSize()" [pageSizeOptions]="pageSizeOptions"
+        [totalItems]="filteredCustomers().length" (pageChange)="query.setPage($event)" (pageSizeChange)="query.setPageSize($event)" />
     </div>
   }
-</section>
+</div>
+
+<dialog #customerDialog aria-labelledby="customer-title" (cancel)="closeCustomer($event)"
+  class="m-auto w-[min(94vw,560px)] max-h-[90dvh] overflow-y-auto rounded-3xl border border-border bg-white p-5 text-ink sm:p-7 shadow-xl backdrop:bg-black/40">
+  @if (editing() || selectedCustomer()) {
+    <h2 id="customer-title" class="text-xl font-semibold">{{ editing() ? (selectedCustomer() ? 'Editar cliente' : 'Nuevo cliente') : selectedCustomer()?.fullName }}</h2>
+    @if (editing()) {
+      <form [formGroup]="customerForm" (ngSubmit)="saveCustomer()" class="mt-5">
+        <fieldset [disabled]="saving()" class="grid gap-4 sm:grid-cols-2">
+          @for (field of editFields; track field.name) {
+            <div>
+              <label [for]="'customer-' + field.name" class="mb-1.5 block text-sm font-medium">{{ field.label }}</label>
+              <input [id]="'customer-' + field.name" [type]="field.type" [formControlName]="field.name" [appSanitize]="field.kind" [attr.maxlength]="field.max"
+                [attr.aria-invalid]="customerForm.controls[field.name].touched && customerForm.controls[field.name].invalid"
+                [class.border-danger]="customerForm.controls[field.name].touched && customerForm.controls[field.name].invalid"
+                class="w-full rounded-xl border border-border px-3 py-2.5 text-sm focus:border-brand focus:outline-none" />
+              @if (field.name === 'username' && !selectedCustomer() && !customerForm.controls[field.name].invalid) {
+                <p class="mt-1 text-xs text-ink-muted">Puedes cambiar el usuario sugerido.</p>
+              }
+              @if (customerForm.controls[field.name].touched && customerForm.controls[field.name].invalid) {
+                <p class="mt-1 text-xs text-danger">{{ fieldError(field.name) }}</p>
+              }
+            </div>
+          }
+          <div>
+            <label for="customer-status" class="mb-1.5 block text-sm font-medium">Estado</label>
+            <select id="customer-status" formControlName="idStatus" class="w-full rounded-xl border border-border px-3 py-2.5 text-sm">
+              @for (status of statuses; track status.idStatus) {
+                <option [ngValue]="status.idStatus">{{ getStatusLabel(status.name) }}</option>
+              }
+            </select>
+          </div>
+          @if (!selectedCustomer()) {
+            <div class="sm:col-span-2">
+              <label for="customer-password" class="mb-1.5 block text-sm font-medium">Contraseña</label>
+              <input id="customer-password" type="password" formControlName="password" autocomplete="new-password" minlength="10" maxlength="72"
+                [attr.aria-invalid]="customerForm.controls.password.touched && customerForm.controls.password.invalid"
+                class="w-full rounded-xl border border-border px-3 py-2.5 text-sm focus:border-brand focus:outline-none" />
+              @if (!(customerForm.controls.password.touched && customerForm.controls.password.invalid)) {
+                <p class="mt-1 text-xs text-ink-muted">Mínimo 10 caracteres.</p>
+              }
+              @if (customerForm.controls.password.touched && customerForm.controls.password.invalid) {
+                <p class="mt-1 text-xs text-danger">{{ fieldError('password') }}</p>
+              }
+            </div>
+          }
+        </fieldset>
+        @if (formError()) { <p role="alert" class="mt-4 text-sm text-danger">{{ formError() }}</p> }
+        <div class="mt-6 flex justify-end gap-3">
+          <button type="button" [disabled]="saving()" (click)="closeCustomer()" class="rounded-full border border-border px-5 py-2 text-sm">Cancelar</button>
+          <button type="submit" [disabled]="saving()" class="rounded-full bg-brand px-5 py-2 text-sm text-white">{{ saving() ? 'Guardando…' : 'Guardar cliente' }}</button>
+        </div>
+      </form>
+    } @else if (selectedCustomer(); as customer) {
+    <dl class="mt-5 grid grid-cols-[auto_1fr] gap-x-5 gap-y-3 text-sm">
+      <dt>Usuario</dt><dd class="min-w-0 break-words">{{ customer.username }}</dd>
+      <dt>Correo</dt><dd class="break-all">{{ customer.email }}</dd>
+      <dt>Contacto</dt><dd class="min-w-0 break-words">{{ customer.contact || '—' }}</dd>
+      <dt>Dirección</dt><dd class="min-w-0 break-words">{{ customer.address || '—' }}</dd>
+      <dt>Registro</dt><dd class="min-w-0 break-words">{{ formatDate(customer.createdAt) }}</dd>
+      <dt>Compras pagadas</dt><dd class="min-w-0 break-words">{{ customer.paidOrderCount }}</dd>
+      <dt>Total compras</dt><dd class="min-w-0 break-words">{{ customer.totalPurchases | currency: 'PEN' : 'S/ ' }}</dd>
+    </dl>
+    <p class="mt-4 text-xs text-ink-muted">Los importes de compras se calculan con los precios actuales del catálogo.</p>
+    <button type="button" (click)="closeCustomer()" class="mt-6 rounded-full bg-brand px-5 py-2 text-sm text-white">Cerrar</button>
+    }
+  }
+</dialog>
+
+<dialog #deactivateDialog aria-labelledby="deactivate-customer-title" (cancel)="closeDeactivate($event)"
+  class="m-auto w-[min(94vw,440px)] rounded-3xl border border-border bg-white p-5 text-ink sm:p-7 shadow-xl backdrop:bg-black/40">
+  <h2 id="deactivate-customer-title" class="text-xl font-semibold">Desactivar cliente</h2>
+  <p class="mt-3 text-sm text-ink-muted">{{ selectedCustomer()?.fullName }} no podrá iniciar una nueva sesión. Sus datos y sus compras se conservarán.</p>
+  @if (formError()) { <p role="alert" class="mt-4 text-sm text-danger">{{ formError() }}</p> }
+  <div class="mt-6 flex justify-end gap-3">
+    <button type="button" [disabled]="saving()" (click)="closeDeactivate()" class="rounded-full border border-border px-4 py-2 text-sm">Cancelar</button>
+    <button type="button" [disabled]="saving()" (click)="deactivateCustomer()" class="rounded-full bg-danger px-4 py-2 text-sm text-white">{{ saving() ? 'Desactivando…' : 'Desactivar' }}</button>
+  </div>
+</dialog>
