@@ -19,23 +19,33 @@ export interface ProductsQuery {
   page?: number;
   size?: number;
   search?: string;
+  maxStock?: number;
 }
 
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${environment.apiUrl}${API_ROUTES.products}`;
+  private readonly baseUrl = `${environment.apiUrl}${API_ROUTES.products.base}`;
 
-  getPage({ page = 0, size = 20, search }: ProductsQuery = {}): Observable<
+  getPage({ page = 0, size = 20, search , maxStock}: ProductsQuery = {}): Observable<
     PageDto<ProductSummary>
   > {
     let params = new HttpParams().set('page', page).set('size', size).set('sort', 'idProduct,desc');
     const term = search?.trim();
     if (term) params = params.set('search', term);
+    if (maxStock !== undefined) params = params.set('maxStock', maxStock);
 
     return this.http
       .get<PageDto<ProductSummaryDto>>(this.baseUrl, { params })
       .pipe(map((res) => ({ ...res, content: res.content.map(toProductSummary) })));
+  }
+  count({ maxStock }: { maxStock?: number } = {}): Observable<number> {
+    let params = new HttpParams().set('page', 0).set('size', 1);
+    if (maxStock !== undefined) params = params.set('maxStock', maxStock);
+
+    return this.http
+      .get<PageDto<ProductSummaryDto>>(this.baseUrl, { params })
+      .pipe(map((res) => res.totalElements));
   }
 
   getById(id: number): Observable<Product> {

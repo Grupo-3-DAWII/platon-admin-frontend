@@ -4,10 +4,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Icon } from '../../../../shared/components/icon/icon';
-import { ProductImageCard } from '../../components/product-image-card/product-image-card';
 import { ProductInfoFields } from '../../components/product-info-fields/product-info-fields';
 import { createProductForm, toFormValue, toProductRequest } from '../../models/product-form';
 import { ProductsService } from '../../services/products.service';
+import { ProductImageCard } from '../../components/product-image-card/product-image-card';
 
 @Component({
   selector: 'app-product-form-page',

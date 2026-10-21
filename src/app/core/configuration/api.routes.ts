@@ -7,9 +7,10 @@ export const API_ROUTES = {
     byId: (id: number) => `/api/accounts/${id}`,
     validateUsername: (username: string) => `/api/accounts/validate/${encodeURIComponent(username)}`,
   },
-  products: '/api/products',
-    inventory: '/api/inventory',
-  authors: '/api/authors',
-  editorials: '/api/editorials',
-  genres: '/api/genres', 
-} as const;
+  products: {
+    base:'/api/products',
+    editorials: '/api/products/editorials',
+    genres: '/api/products/genres', 
+  },
+  inventory: '/api/inventory',
+  } as const;

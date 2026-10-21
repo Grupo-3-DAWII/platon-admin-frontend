@@ -40,7 +40,7 @@ export function toFormValue(p: Product): ProductFormValue {
 export function toProductRequest(value: ProductFormValue, image: string | null): ProductRequest {
   return {
     ...value,
-    image: image && image !== PLACEHOLDER_COVER ? image : undefined,
+    image: image && image !== PLACEHOLDER_COVER ? image : '',
   };
 }
 

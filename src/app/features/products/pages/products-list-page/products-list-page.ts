@@ -9,7 +9,7 @@ import { Pagination } from '../../../../shared/components/pagination/pagination'
 import { PageDto } from '../../../../shared/models/page';
 import { STOCK_FILTERS, StockFilter } from '../../../../shared/models/stock-status';
 import { ProductCard } from '../../components/product-card/product-card';
-import { ProductSummary } from '../../models/product';
+import { ProductSummary, LOW_STOCK_THRESHOLD } from '../../models/product';
 import { ProductsService } from '../../services/products.service';
 
 const EMPTY_PAGE: PageDto<ProductSummary> = {
@@ -20,6 +20,10 @@ const EMPTY_PAGE: PageDto<ProductSummary> = {
   totalPages: 0,
   first: true,
   last: true,
+};
+const MAX_STOCK_BY_FILTER: Partial<Record<StockFilter, number>> = {
+  low: LOW_STOCK_THRESHOLD,
+  out: 0,
 };
 
 @Component({
@@ -47,6 +51,7 @@ export class ProductsListPage {
     page: this.page() - 1,
     size: this.pageSize(),
     search: this.search(),
+    maxStock: MAX_STOCK_BY_FILTER[this.selectedFilter()],
     tick: this.reloadTick(),
   }));
 
@@ -56,8 +61,8 @@ export class ProductsListPage {
         this.loading.set(true);
         this.error.set(false);
       }),
-      switchMap(({ page, size, search }) =>
-        this.service.getPage({ page, size, search }).pipe(
+      switchMap(({ page, size, search, maxStock }) =>
+        this.service.getPage({ page, size, search, maxStock }).pipe(
           catchError(() => {
             this.error.set(true);
             return of(EMPTY_PAGE);
@@ -72,9 +77,8 @@ export class ProductsListPage {
   readonly totalElements = computed(() => this.result().totalElements);
 
   readonly filteredProducts = computed(() => {
-    const filter = this.selectedFilter();
     const all = this.result().content;
-    return filter === 'all' ? all : all.filter((p) => p.status === filter);
+    return this.selectedFilter() === 'available' ? all.filter((p) => p.stock > 0) : all;
   });
 
   constructor() {
@@ -92,6 +96,7 @@ export class ProductsListPage {
 
   onFilterChange(filter: StockFilter) {
     this.selectedFilter.set(filter);
+    this.page.set(1);
   }
 
   onPageChange(page: number) {
