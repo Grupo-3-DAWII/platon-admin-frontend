@@ -1,10 +1,13 @@
 <div class="flex h-dvh overflow-hidden bg-white">
-  <app-sidebar />
+  @if (isMobile() && mobileMenuOpen()) {
+    <button type="button" aria-label="Cerrar navegación" (click)="closeMenu()"
+      class="fixed inset-0 z-40 bg-black/35 lg:hidden"></button>
+  }
+  <app-sidebar [isMobile]="isMobile()" [mobileOpen]="mobileMenuOpen()" (navigation)="closeMenu()" />
 
-  <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
-    <app-header />
-
-    <main class="min-w-0 flex-1 overflow-y-auto bg-white pt-5 p-7">
+  <div class="flex min-w-0 flex-1 flex-col overflow-hidden" [attr.inert]="isMobile() && mobileMenuOpen() ? '' : null">
+    <app-header [menuOpen]="mobileMenuOpen()" (menuToggle)="toggleMenu()" />
+    <main class="min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-white p-4 sm:p-6 lg:p-7 lg:pt-5">
       <router-outlet />
     </main>
   </div>

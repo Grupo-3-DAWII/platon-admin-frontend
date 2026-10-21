@@ -1,4 +1,4 @@
-<section class="flex flex-col gap-6">
+<section class="flex min-w-0 flex-col gap-4 sm:gap-6">
   <!-- Page header -->
   <div>
     <h1 class="text-2xl font-semibold tracking-tight text-ink">Dashboard</h1>
@@ -8,139 +8,67 @@
     </p>
   </div>
 
-  <!-- Summary cards -->
-  <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-    <!-- Sales -->
-    <article class="rounded-card bg-card-sales px-5 py-4">
-      <div class="flex items-start justify-between">
-        <div
-          class="flex size-9 items-center justify-center rounded-full bg-card-sales-icon-bg text-card-sales-icon-text"
-        >
-          <app-icon name="scanner" [size]="18" />
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="summary-card min-w-0 rounded-card bg-card-sales p-4 sm:p-5">
+      <div class="grid min-w-0 grid-cols-[44px_minmax(0,1fr)] items-center gap-x-4 gap-y-1">
+        <div [class.row-span-2]="salesTotalLabel.length <= 15" class="flex size-11 shrink-0 items-center justify-center rounded-control bg-card-sales-icon-bg text-card-sales-icon-text" aria-hidden="true">
+          <app-icon name="sales" [size]="20" />
         </div>
-
-        <button
-          type="button"
-          aria-label="Opciones de ventas"
-          class="text-ink-muted/80 transition-colors hover:text-ink"
-        >
-          <app-icon name="more" [size]="16" />
-        </button>
-      </div>
-
-      <p class="mt-5 text-sm font-medium text-ink-muted">Ventas totales</p>
-
-      <div class="mt-2 flex items-end justify-between gap-3">
-        <h2 class="text-[30px] font-semibold leading-none tracking-tight text-ink">S/ 25,403</h2>
-
-        <span
-          class="inline-flex items-center gap-1 rounded-full border border-growth-border bg-growth-bg px-2.5 py-1 text-[11px] font-medium leading-none text-growth-text"
-        >
-          <span>↑</span>
-          <span>25%</span>
-        </span>
+        <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+          <p class="text-sm font-medium leading-snug text-ink-muted">Ventas totales</p>
+          <span class="inline-flex shrink-0 items-center gap-1 rounded-full border border-growth-border bg-growth-bg px-2 py-1 text-[10px] font-medium leading-none text-growth-text">
+            <span aria-hidden="true">↑</span><span>25%</span>
+          </span>
+        </div>
+        <h2 [class.col-span-2]="salesTotalLabel.length > 15" [class.col-start-2]="salesTotalLabel.length <= 15" [style.--value-length]="salesTotalLabel.length" class="summary-value min-w-0 font-semibold leading-tight tracking-tight text-ink">{{ salesTotalLabel }}</h2>
       </div>
     </article>
-
-    <!-- Orders -->
-    <article class="rounded-card bg-card-orders px-5 py-4">
-      <div class="flex items-start justify-between">
-        <div
-          class="flex size-9 items-center justify-center rounded-full bg-card-orders-icon-bg text-card-orders-icon-text"
-        >
-          <app-icon name="file" [size]="18" />
+    <article class="summary-card min-w-0 rounded-card bg-card-orders p-4 sm:p-5">
+      <div class="grid min-w-0 grid-cols-[44px_minmax(0,1fr)] items-center gap-x-4 gap-y-1">
+        <div class="flex size-11 shrink-0 items-center justify-center rounded-control bg-card-orders-icon-bg text-card-orders-icon-text row-span-2" aria-hidden="true">
+          <app-icon name="orders" [size]="20" />
         </div>
-
-        <button
-          type="button"
-          aria-label="Opciones de pedidos"
-          class="text-ink-muted/80 transition-colors hover:text-ink"
-        >
-          <app-icon name="more" [size]="16" />
-        </button>
-      </div>
-
-      <p class="mt-5 text-sm font-medium text-ink-muted">Pedidos totales</p>
-
-      <div class="mt-2 flex items-end justify-between gap-3">
-        <h2 class="text-[30px] font-semibold leading-none tracking-tight text-ink">76</h2>
-
-        <span
-          class="inline-flex items-center gap-1 rounded-full border border-growth-border bg-growth-bg px-2.5 py-1 text-[11px] font-medium leading-none text-growth-text"
-        >
-          <span>↑</span>
-          <span>8%</span>
-        </span>
+        <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+          <p class="text-sm font-medium leading-snug text-ink-muted">Pedidos totales</p>
+          <span class="inline-flex shrink-0 items-center gap-1 rounded-full border border-growth-border bg-growth-bg px-2 py-1 text-[10px] font-medium leading-none text-growth-text">
+            <span aria-hidden="true">↑</span><span>8%</span>
+          </span>
+        </div>
+        <h2 class="summary-value min-w-0 font-semibold leading-tight tracking-tight text-ink col-start-2">76</h2>
       </div>
     </article>
-
-    <!-- Customers -->
-    <article class="rounded-card bg-card-customers px-5 py-4">
-      <div class="flex items-start justify-between">
-        <div
-          class="flex size-9 items-center justify-center rounded-full bg-card-customers-icon-bg text-card-customers-icon-text"
-        >
-          <app-icon name="customers" [size]="18" />
+    <article class="summary-card min-w-0 rounded-card bg-card-customers p-4 sm:p-5">
+      <div class="grid min-w-0 grid-cols-[44px_minmax(0,1fr)] items-center gap-x-4 gap-y-1">
+        <div class="flex size-11 shrink-0 items-center justify-center rounded-control bg-card-customers-icon-bg text-card-customers-icon-text row-span-2" aria-hidden="true">
+          <app-icon name="customers" [size]="20" />
         </div>
-
-        <button
-          type="button"
-          aria-label="Opciones de clientes"
-          class="text-ink-muted/80 transition-colors hover:text-ink"
-        >
-          <app-icon name="more" [size]="16" />
-        </button>
-      </div>
-
-      <p class="mt-5 text-sm font-medium text-ink-muted">Clientes nuevos</p>
-
-      <div class="mt-2 flex items-end justify-between gap-3">
-        <h2 class="text-[30px] font-semibold leading-none tracking-tight text-ink">12</h2>
-
-        <span
-          class="inline-flex items-center gap-1 rounded-full border border-growth-border bg-growth-bg px-2.5 py-1 text-[11px] font-medium leading-none text-growth-text"
-        >
-          <span>↑</span>
-          <span>1%</span>
-        </span>
+        <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+          <p class="text-sm font-medium leading-snug text-ink-muted">Clientes nuevos</p>
+          <span class="inline-flex shrink-0 items-center gap-1 rounded-full border border-growth-border bg-growth-bg px-2 py-1 text-[10px] font-medium leading-none text-growth-text">
+            <span aria-hidden="true">↑</span><span>1%</span>
+          </span>
+        </div>
+        <h2 class="summary-value min-w-0 font-semibold leading-tight tracking-tight text-ink col-start-2">12</h2>
       </div>
     </article>
-
-    <!-- Products -->
-    <article class="rounded-card bg-card-products px-5 py-4">
-      <div class="flex items-start justify-between">
-        <div
-          class="flex size-9 items-center justify-center rounded-full bg-card-products-icon-bg text-card-products-icon-text"
-        >
-          <app-icon name="products" [size]="18" />
+    <article class="summary-card min-w-0 rounded-card bg-card-products p-4 sm:p-5">
+      <div class="grid min-w-0 grid-cols-[44px_minmax(0,1fr)] items-center gap-x-4 gap-y-1">
+        <div class="flex size-11 shrink-0 items-center justify-center rounded-control bg-card-products-icon-bg text-card-products-icon-text row-span-2" aria-hidden="true">
+          <app-icon name="products" [size]="20" />
         </div>
-
-        <button
-          type="button"
-          aria-label="Opciones de productos"
-          class="text-ink-muted/80 transition-colors hover:text-ink"
-        >
-          <app-icon name="more" [size]="16" />
-        </button>
-      </div>
-
-      <p class="mt-5 text-sm font-medium text-ink-muted">Productos totales</p>
-
-      <div class="mt-2 flex items-end justify-between gap-3">
-        <h2 class="text-[30px] font-semibold leading-none tracking-tight text-ink">1649</h2>
-
-        <span
-          class="inline-flex items-center gap-1 rounded-full border border-growth-border bg-growth-bg px-2.5 py-1 text-[11px] font-medium leading-none text-growth-text"
-        >
-          <span>↑</span>
-          <span>5%</span>
-        </span>
+        <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+          <p class="text-sm font-medium leading-snug text-ink-muted">Productos totales</p>
+          <span class="inline-flex shrink-0 items-center gap-1 rounded-full border border-growth-border bg-growth-bg px-2 py-1 text-[10px] font-medium leading-none text-growth-text">
+            <span aria-hidden="true">↑</span><span>5%</span>
+          </span>
+        </div>
+        <h2 class="summary-value min-w-0 font-semibold leading-tight tracking-tight text-ink col-start-2">1649</h2>
       </div>
     </article>
   </div>
 
   <!-- Weekly report -->
-  <section class="rounded-panel border border-border bg-surface p-5">
+  <section class="rounded-panel border border-border bg-surface p-4 sm:p-5">
     <div class="flex flex-wrap items-center justify-between gap-4">
       <h2 class="text-base font-semibold text-ink">Informe de esta semana</h2>
 
@@ -171,8 +99,8 @@
       </div>
     </div>
 
-    <div class="mt-6">
-      <apx-chart
+    <div class="mt-6 min-w-0 max-w-full overflow-hidden">
+      <apx-chart class="block min-w-0 max-w-full"
         [series]="chartSeries()"
         [chart]="chartOptions.chart"
         [colors]="chartOptions.colors"
@@ -193,8 +121,8 @@
     class="grid grid-cols-1 items-stretch gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(340px,1fr)]"
   >
     <!-- Recent orders -->
-    <section class="min-w-0 rounded-panel border border-border bg-surface p-5">
-      <div class="flex items-center justify-between gap-4">
+    <section class="min-w-0 rounded-panel border border-border bg-surface p-4 sm:p-5">
+      <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 class="text-base font-semibold text-ink">Pedidos recientes</h2>
 
@@ -203,12 +131,7 @@
           </p>
         </div>
 
-        <button
-          type="button"
-          class="shrink-0 text-sm font-medium text-brand transition-colors hover:text-brand-hover"
-        >
-          Ver todos
-        </button>
+        <a routerLink="/orders" class="shrink-0 text-sm font-medium text-brand transition-colors hover:text-brand-hover">Ver todos</a>
       </div>
 
       <div class="mt-5">
@@ -234,15 +157,6 @@
               Hoy, 10:42
             </td>
 
-            <td class="border-b border-table-divider px-5 py-2 text-center">
-              <button
-                type="button"
-                aria-label="Opciones del pedido PL-1048"
-                class="inline-flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
-              >
-                <app-icon name="more" [size]="16" />
-              </button>
-            </td>
           </tr>
 
           <tr class="h-[56px] transition-colors hover:bg-table-row-hover">
@@ -266,15 +180,6 @@
               Hoy, 09:18
             </td>
 
-            <td class="border-b border-table-divider px-5 py-2 text-center">
-              <button
-                type="button"
-                aria-label="Opciones del pedido PL-1047"
-                class="inline-flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
-              >
-                <app-icon name="more" [size]="16" />
-              </button>
-            </td>
           </tr>
 
           <tr class="h-[56px] transition-colors hover:bg-table-row-hover">
@@ -298,15 +203,6 @@
               Ayer, 17:35
             </td>
 
-            <td class="border-b border-table-divider px-5 py-2 text-center">
-              <button
-                type="button"
-                aria-label="Opciones del pedido PL-1046"
-                class="inline-flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
-              >
-                <app-icon name="more" [size]="16" />
-              </button>
-            </td>
           </tr>
 
           <tr class="h-[56px] transition-colors hover:bg-table-row-hover">
@@ -322,22 +218,13 @@
 
             <td class="px-5 py-2 text-sm font-normal text-ink-muted">Ayer, 15:08</td>
 
-            <td class="px-5 py-2 text-center">
-              <button
-                type="button"
-                aria-label="Opciones del pedido PL-1045"
-                class="inline-flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
-              >
-                <app-icon name="more" [size]="16" />
-              </button>
-            </td>
           </tr>
         </app-data-table>
       </div>
     </section>
 
     <!-- Sales by category -->
-    <section class="flex min-w-0 flex-col rounded-panel border border-border bg-surface p-5">
+    <section class="flex min-w-0 flex-col rounded-panel border border-border bg-surface p-4 sm:p-5">
       <div>
         <h2 class="text-base font-semibold text-ink">Ventas por categoría</h2>
 
@@ -346,9 +233,9 @@
         </p>
       </div>
 
-      <div class="mt-4 flex min-h-0 flex-1 items-center">
+      <div class="mt-4 flex min-h-0 min-w-0 flex-1 items-center overflow-hidden">
         <apx-chart
-          class="w-full"
+          class="block w-full min-w-0"
           [series]="categoryChartOptions.series"
           [chart]="categoryChartOptions.chart"
           [colors]="categoryChartOptions.colors"

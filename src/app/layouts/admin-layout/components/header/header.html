@@ -1,67 +1,28 @@
-<header
-  class="flex items-center gap-[15px] border-b border-border bg-surface px-7 py-[15px]"
->
-  <!-- Main -->
-  <div class="flex flex-1 items-center justify-between">
-    <!-- Search -->
-    <div class="w-[359px]">
-      <app-search-input placeholder="Buscar" />
+<header class="flex min-h-[68px] min-w-0 items-center gap-3 border-b border-border bg-surface px-4 py-3 sm:px-6 lg:px-7 lg:py-[15px]">
+  <button #menuButton type="button" aria-label="Abrir menú de navegación" aria-controls="main-navigation"
+    [attr.aria-expanded]="menuOpen()" (click)="menuToggle.emit()"
+    class="flex size-11 shrink-0 items-center justify-center rounded-full text-ink hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand lg:hidden">
+    <app-icon name="menu" [size]="22" />
+  </button>
+  <img src="/images/logo/platon-logo.png" alt="Librería Platón" class="h-7 w-auto shrink-0 object-contain md:hidden" />
+  <div class="hidden min-w-0 flex-1 md:block">
+    <app-search-input placeholder="Buscar" class="block w-full max-w-[359px]" />
+  </div>
+  <div class="ml-auto flex min-w-0 shrink-0 items-center gap-3 sm:gap-5">
+    <div class="relative inline-flex shrink-0 items-center justify-center text-ink-muted">
+      <app-icon name="notification" [size]="20" />
+      <span class="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-danger" aria-hidden="true"></span>
     </div>
-
-    <!-- Actions -->
-    <div class="flex flex-1 items-center justify-end gap-5">
-      <!-- Notification -->
-      <div class="relative inline-flex items-center justify-center text-ink-muted">
-        <app-icon
-          name="notification"
-          [size]="20"
-        />
-
-        <!-- Badge -->
-        <span
-          class="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-danger"
-          aria-hidden="true"
-        ></span>
+    <div class="hidden h-5 w-px bg-border sm:block" aria-hidden="true"></div>
+    <div class="flex min-w-0 items-center gap-2 sm:gap-3">
+      <img src="/images/avatar/user-avatar.png" alt="Foto de perfil" class="size-8 shrink-0 rounded-full object-cover" />
+      <div class="hidden min-w-0 max-w-[160px] flex-col justify-center md:flex">
+        <span class="truncate text-sm font-medium leading-none text-ink">{{ auth.session()?.user?.name }} {{ auth.session()?.user?.lastname }}</span>
+        <span class="mt-1 text-[10px] leading-none text-ink-soft">{{ auth.session()?.user?.role === 'ADMIN' ? 'Administrador' : 'Vendedor' }}</span>
       </div>
-
-      <!-- Divider -->
-      <div
-        class="h-5 w-px bg-border"
-        aria-hidden="true"
-      ></div>
-
-      <!-- Profile -->
-      <div class="flex items-center gap-3">
-        <!-- Avatar -->
-        <img
-          src="/images/avatar/user-avatar.png"
-          alt="Jhaser Campos"
-          class="size-8 rounded-full object-cover"
-        />
-
-        <!-- Info -->
-        <div class="flex flex-col justify-center">
-          <span class="text-sm font-medium leading-none text-ink">
-            Jhaser Campos
-          </span>
-
-          <span class="mt-1 text-[10px] leading-none text-ink-soft">
-            Admin
-          </span>
-        </div>
-
-        <!-- Menu -->
-        <button
-          type="button"
-          aria-label="Abrir menú de perfil"
-          class="flex size-8 items-center justify-center text-ink-muted transition-colors hover:text-ink"
-        >
-          <app-icon
-            name="more"
-            [size]="18"
-          />
-        </button>
-      </div>
+      <button type="button" aria-label="Abrir menú de perfil" class="hidden size-8 items-center justify-center text-ink-muted hover:text-ink sm:flex">
+        <app-icon name="more" [size]="18" />
+      </button>
     </div>
   </div>
 </header>

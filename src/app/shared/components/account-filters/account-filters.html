@@ -1,0 +1,33 @@
+<form [formGroup]="form" (ngSubmit)="apply()" aria-label="Filtros adicionales" class="mt-3 rounded-2xl border border-border bg-surface p-4 sm:p-5">
+  <div class="mb-4 flex items-center justify-between gap-3">
+    <h2 class="font-semibold text-ink">Filtros adicionales</h2>
+    <button type="button" aria-label="Cerrar filtros" (click)="dismiss.emit()" class="flex size-9 items-center justify-center rounded-full text-xl hover:bg-surface-muted">×</button>
+  </div>
+  <div class="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    @if (kind() === 'users') {
+      <label class="flex min-w-0 flex-col gap-2 text-sm">Rol
+        <select formControlName="role" aria-label="Rol" class="min-w-0 rounded-xl border border-control-border bg-white p-3">
+          <option value="all">Todos los roles</option><option value="ADMIN">Administrador</option><option value="SELLER">Vendedor</option>
+        </select>
+      </label>
+    } @else {
+      <label class="flex min-w-0 flex-col gap-2 text-sm">Compras pagadas
+        <select formControlName="purchases" aria-label="Compras pagadas" class="min-w-0 rounded-xl border border-control-border bg-white p-3">
+          <option value="all">Todos los clientes</option><option value="with">Con compras pagadas</option><option value="without">Sin compras pagadas</option>
+        </select>
+      </label>
+    }
+    <label class="flex min-w-0 flex-col gap-2 text-sm">Registrado desde
+      <input type="date" formControlName="from" [max]="form.controls.to.value || '9999-12-31'" class="w-full min-w-0 rounded-xl border border-control-border bg-white p-3" />
+    </label>
+    <label class="flex min-w-0 flex-col gap-2 text-sm">Registrado hasta
+      <input type="date" formControlName="to" [min]="form.controls.from.value" class="w-full min-w-0 rounded-xl border border-control-border bg-white p-3" />
+    </label>
+  </div>
+  @if (invalidRange) { <p role="alert" class="mt-3 text-sm text-danger">La fecha final debe ser igual o posterior a la inicial.</p> }
+  <p class="mt-3 text-xs text-ink-muted">Se combina con el estado y la búsqueda. Las fechas incluyen ambos días.</p>
+  <div class="mt-4 flex flex-wrap justify-end gap-3">
+    <button type="button" (click)="reset()" class="rounded-full border border-border px-5 py-2.5 text-sm">Restablecer</button>
+    <button type="submit" [disabled]="invalidRange || form.invalid" class="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50">Aplicar filtros</button>
+  </div>
+</form>

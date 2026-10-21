@@ -1,0 +1,9 @@
+.summary-card {
+  container-type: inline-size;
+}
+
+.summary-value {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-size: min(1.625rem, calc(100cqi / (var(--value-length, 1) * 0.62)));
+}

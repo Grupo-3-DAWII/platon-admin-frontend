@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
 
 import { AuthService } from '../../../../core/auth/auth.service';
 import { Input } from '../../../../shared/components/input/input';
@@ -15,18 +17,18 @@ export class LoginPage {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
-  readonly email = signal('');
+  readonly username = signal('');
   readonly password = signal('');
 
   readonly loading = signal(false);
   readonly errorMessage = signal('');
 
   login(): void {
-    const email = this.email().trim();
+    const username = this.username().trim();
     const password = this.password();
 
-    if (!email || !password) {
-      this.errorMessage.set('Ingresa tu correo electrónico y contraseña.');
+    if (!username || !password) {
+      this.errorMessage.set('Ingresa tu usuario y contraseña.');
       return;
     }
 
@@ -35,20 +37,30 @@ export class LoginPage {
 
     this.authService
       .login({
-        email,
+        username,
         password,
       })
+      .pipe(
+        finalize(() => {
+          this.loading.set(false);
+        }),
+      )
       .subscribe({
         next: () => {
-          this.loading.set(false);
-
-          void this.router.navigate(['/dashboard']);
+          void this.router.navigate([this.authService.homeRoute()]);
         },
 
-        error: () => {
-          this.loading.set(false);
+        error: (error: HttpErrorResponse) => {
+          if (error.status === 403) {
+            this.errorMessage.set(error.error?.message ?? 'Esta cuenta no tiene acceso al panel interno.');
+            return;
+          }
+          if (error.status === 401) {
+            this.errorMessage.set('Usuario o contraseña incorrectos.');
+            return;
+          }
 
-          this.errorMessage.set('Correo o contraseña incorrectos. Verifica tus credenciales.');
+          this.errorMessage.set('No se pudo conectar con el servidor. Inténtalo nuevamente.');
         },
       });
   }

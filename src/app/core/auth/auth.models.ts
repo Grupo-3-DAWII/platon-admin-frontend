@@ -1,18 +1,17 @@
 export interface LoginRequest {
-  email: string;
+  username: string;
   password: string;
 }
 
-export interface AuthUser {
-  id: string | number;
-  name: string;
-  email: string;
-  role: string;
-}
-
-export interface LoginResponse {
-  authenticated: boolean;
-  user?: AuthUser;
-  accessToken?: string;
-  tokenType?: string;
+export interface AuthSession {
+  accessToken: string;
+  tokenType: 'Bearer';
+  expiresAt: string;
+  user: {
+    idUser: number;
+    username: string;
+    name: string;
+    lastname: string;
+    role: 'ADMIN' | 'SELLER';
+  };
 }
