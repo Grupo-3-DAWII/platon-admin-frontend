@@ -13,17 +13,37 @@
     searchPlaceholder="Buscar productos"
     [filters]="filters"
     [selectedFilter]="selectedFilter()"
-    [totalCount]="products().length"
+    [totalCount]="totalElements()"
     (filterChange)="onFilterChange($event)"
+    (searchChange)="onSearch($event)"
     (filterClick)="openFilterPanel()"
     (sortClick)="openSortMenu()"
   />
-
+  @if (error()) {
+  <div class="py-10 text-center text-pc-grey">
+    <p>No se pudieron cargar los productos.</p>
+    <button type="button" class="mt-3 font-medium text-brand underline" (click)="retry()">
+      Reintentar
+    </button>
+  </div>
+  } @else if (loading()) {
+  <p class="py-10 text-center text-pc-grey">Cargando productos...</p>
+  } @else {
   <div class="grid grid-cols-4 gap-[24px]">
     @for (book of filteredProducts(); track book.id) {
-    <app-product-card [book]="book" />
+        <app-product-card [book]="book" />
     } @empty {
     <p class="col-span-4 py-10 text-center text-pc-grey">No hay productos para mostrar.</p>
     }
   </div>
+  } @if (totalElements() > 0) {
+  <app-pagination
+    [page]="page()"
+    [pageSize]="pageSize()"
+    [totalItems]="totalElements()"
+    [pageSizeOptions]="pageSizeOptions"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+  />
+  }
 </div>

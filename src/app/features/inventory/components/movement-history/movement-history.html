@@ -1,0 +1,40 @@
+<section class="card flex flex-col gap-4" aria-labelledby="history-title">
+    <div class="flex justify-between w-full pr-5">
+  <h2 id="history-title" class="card-title">Historial de movimientos</h2>
+  <p class="font-medium">Stock Actual: {{stock()}}</p>
+    </div>
+  @if (error()) {
+  <div class="py-6 text-center text-pc-grey">
+    <p>No se pudo cargar el historial.</p>
+    <button type="button" class="mt-3 font-medium text-brand underline" (click)="retry()">
+      Reintentar
+    </button>
+  </div>
+  } @else if (loading()) {
+  <p class="py-6 text-center text-pc-grey">Cargando historial...</p>
+  } @else {
+  <app-data-table [columns]="columns">
+    @for (movement of movements(); track movement.id) {
+    <tr class="h-[56px] transition-colors hover:bg-table-row-hover">
+    
+      <td class="border-b border-table-divider px-5 py-2 text-sm text-ink">
+        {{ movementSummary(movement) }}
+      </td>
+      <td class="border-b border-table-divider px-5 py-2 text-sm text-ink">
+        {{ movement.resultingStock }}
+      </td>
+  <td class="border-b border-table-divider px-5 py-2 text-sm text-ink">
+        {{ movementDate(movement.date) }}
+      </td>
+      <td class="break-words border-b border-table-divider px-5 py-2 text-sm text-ink-muted">
+        {{ movement.notes || '—' }}
+      </td>
+    </tr>
+    } @empty {
+    <tr>
+      <td colspan="4" class="py-8 text-center text-pc-grey">Este producto aún no tiene movimientos.</td>
+    </tr>
+    }
+  </app-data-table>
+  }
+</section>

@@ -1,0 +1,63 @@
+@if (error()) {
+<div class="py-10 text-center text-pc-grey">
+  <p>No se pudo cargar el producto.</p>
+  <button type="button" class="mt-3 font-medium text-brand underline" (click)="retry()">
+    Reintentar
+  </button>
+</div>
+} @else if (loading()&& !product()) {
+<p class="py-10 text-center text-pc-grey">Cargando producto...</p>
+} @else if (product(); as item) {
+<div class="flex flex-col gap-6">
+  <header class="flex items-center gap-[15px]">
+    <button
+      type="button"
+      (click)="back()"
+      aria-label="Volver"
+      class="flex size-[40px] items-center justify-center rounded-full hover:bg-neutral-100"
+    >
+      <app-icon name="left-arrow" [size]="18"></app-icon>
+    </button>
+
+    <div class="min-w-0 flex-1">
+      <div class="flex items-center gap-5">
+        <h1 class="truncate text-[24px] font-bold text-ink">{{ item.name }}</h1>
+        <app-stock-status-badge [status]="item.status" />
+      </div>
+      <p class="text-sm font-medium text-pc-grey">{{ item.author }}</p>
+    </div>
+
+    <div class="flex gap-3">
+      <a
+        [routerLink]="['/products', item.id]"
+        class="btn inline-flex items-center gap-2 border-2 border-[#e2e8f0] text-[#66656A] hover:bg-muted/10"
+      >
+        <app-icon name="show2" [size]="18"></app-icon>
+        Ver producto
+      </a>
+      <button
+        type="button"
+        (click)="movementOpen.set(true)"
+        class="btn inline-flex items-center gap-2 border-2 border-[#BFE8FF] bg-brand text-white hover:bg-brand/90"
+      >
+        <app-icon name="add" [size]="16"></app-icon>
+        Registrar
+      </button>
+    </div>
+  </header>
+
+  <app-movement-history
+    [productId]="item.id"
+    [refreshKey]="reloadTick()"
+    [stock]="product()?.stock ?? 0"
+  />
+
+  @if (movementOpen()) {
+  <app-movement-dialog
+    [item]="item"
+    (saved)="onMovementSaved()"
+    (closed)="movementOpen.set(false)"
+  />
+  }
+</div>
+}

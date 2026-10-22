@@ -1,16 +1,19 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Location } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ProductsService } from '../../services/products.service';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Icon } from '../../../../shared/components/icon/icon';
-import { createProductForm, toFormValue } from '../../models/product-form';
-import { ProductRequest } from '../../models/product';
 import { ProductInfoFields } from '../../components/product-info-fields/product-info-fields';
+import { createProductForm, toFormValue, toProductRequest } from '../../models/product-form';
+import { ProductsService } from '../../services/products.service';
 import { ProductImageCard } from '../../components/product-image-card/product-image-card';
+import { productErrorMessage } from '../../utils/product-errors';
 
 @Component({
   selector: 'app-product-form-page',
-  imports: [Icon, ReactiveFormsModule, RouterLink, ProductInfoFields, ProductImageCard],
+  imports: [Icon, ReactiveFormsModule,  ProductInfoFields, ProductImageCard],
   styleUrl: '../../style/products.css',
   templateUrl: './product-form-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,6 +22,7 @@ export class ProductFormPage {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly router = inject(Router);
   private readonly service = inject(ProductsService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly idParam = inject(ActivatedRoute).snapshot.paramMap.get('id');
   private readonly bookId = this.idParam === null ? null : Number(this.idParam);
 
@@ -27,16 +31,28 @@ export class ProductFormPage {
   readonly imagePreview = signal<string | null>(null);
   readonly form = createProductForm(this.fb);
 
+  readonly loading = signal(this.isEdit);
+  readonly loadError = signal(false);
+  readonly saving = signal(false);
+  readonly saveError = signal<string | null>(null);
+  private readonly location = inject(Location);
+
+  back() {
+    this.location.back();
+  }
+
   constructor() {
     if (this.bookId === null) return;
 
-    const book = this.service.getById(this.bookId);
-    if (!book) {
+    if (!Number.isInteger(this.bookId) || this.bookId <= 0) {
       this.router.navigate(['/products']);
       return;
     }
-    this.form.patchValue(toFormValue(book));
-    this.imagePreview.set(book.imageUrl);
+    this.load(this.bookId);
+  }
+
+  retry() {
+    if (this.bookId !== null) this.load(this.bookId);
   }
 
   toggleActive() {
@@ -45,21 +61,47 @@ export class ProductFormPage {
   }
 
   save() {
-    if (this.form.invalid) return;
-    const data: ProductRequest = {
-      ...this.form.getRawValue(),
-      imageUrl: this.imagePreview() ?? undefined,
-    };
-    if (this.bookId !== null) {
-      this.service.update(this.bookId, data);
-      this.router.navigate(this.backLink);
-    } else {
-      this.service.create(data);
-      this.router.navigate(['/products']);
-    }
+    if (this.form.invalid || this.saving()) return;
+
+    this.saving.set(true);
+    this.saveError.set(null);
+
+    const request = toProductRequest(this.form.getRawValue(), this.imagePreview());
+    const request$ =
+      this.bookId === null
+        ? this.service.create(request)
+        : this.service.update(this.bookId, request);
+
+    request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => this.router.navigate(this.isEdit ? this.backLink : ['/products'], { replaceUrl: true }),
+      error: (err: HttpErrorResponse) => {
+        this.saving.set(false);
+        this.saveError.set(productErrorMessage(err));
+      },
+    });
   }
 
   cancel() {
     this.router.navigate(this.backLink);
+  }
+
+  private load(id: number) {
+    this.loading.set(true);
+    this.loadError.set(false);
+
+    this.service
+      .getById(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (product) => {
+          this.form.patchValue(toFormValue(product));
+          this.imagePreview.set(product.imageUrl);
+          this.loading.set(false);
+        },
+      error: (err: HttpErrorResponse) => {
+        this.saving.set(false);
+        this.saveError.set(productErrorMessage(err ));
+      },
+      });
   }
 }

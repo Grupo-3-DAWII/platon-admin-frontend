@@ -1,66 +1,62 @@
-import { Injectable, signal } from '@angular/core';
-import { AUTHORS, EDITORIALS, GENRES, productsMockup } from '../data/mockup';
-import { StockStatus } from '../../../shared/models/stock-status';
-import { ProductRequest, ProductResponse } from '../models/product';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { map, Observable } from 'rxjs';
 
-export const PLACEHOLDER_COVER = '/images/placeholder/book-cover.png';
+import { environment } from '../../../../environments/environment';
+import { API_ROUTES } from '../../../core/configuration/api.routes';
+import { PageDto } from '../../../shared/models/page';
+import {
+  Product,
+  ProductDto,
+  ProductRequest,
+  ProductSummary,
+  ProductSummaryDto,
+  toProduct,
+  toProductSummary,
+} from '../models/product';
 
-// --- Mock backend logic: delete this block when the real API is connected ---
-const LOW_STOCK_THRESHOLD = 5;
-
-const statusFor = (stock: number): StockStatus =>
-  stock <= 0 ? 'out' : stock <= LOW_STOCK_THRESHOLD ? 'low' : 'available';
-
-const marginFor = (purchase: number, sale: number) =>
-  Math.round(((sale - purchase) / purchase) * 10000) / 100;
-// ---------------------------------------------------------------------------
+export interface ProductsQuery {
+  page?: number;
+  size?: number;
+  search?: string;
+  maxStock?: number;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
-  readonly authors = Object.values(AUTHORS);
-  readonly editorials = Object.values(EDITORIALS);
-  readonly genres = Object.values(GENRES);
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = `${environment.apiUrl}${API_ROUTES.products.base}`;
 
-  private readonly _books = signal<ProductResponse[]>(
-    productsMockup.map((p) => ({ ...p, status: statusFor(p.stock), updatedAt: p.createdAt })),
-  );
-  readonly books = this._books.asReadonly();
+  getPage({ page = 0, size = 20, search , maxStock}: ProductsQuery = {}): Observable<
+    PageDto<ProductSummary>
+  > {
+    let params = new HttpParams().set('page', page).set('size', size).set('sort', 'idProduct,desc');
+    const term = search?.trim();
+    if (term) params = params.set('search', term);
+    if (maxStock !== undefined) params = params.set('maxStock', maxStock);
 
-  getById(id: number): ProductResponse | undefined {
-    return this._books().find((b) => b.id === id);
+    return this.http
+      .get<PageDto<ProductSummaryDto>>(this.baseUrl, { params })
+      .pipe(map((res) => ({ ...res, content: res.content.map(toProductSummary) })));
+  }
+  count({ maxStock }: { maxStock?: number } = {}): Observable<number> {
+    let params = new HttpParams().set('page', 0).set('size', 1);
+    if (maxStock !== undefined) params = params.set('maxStock', maxStock);
+
+    return this.http
+      .get<PageDto<ProductSummaryDto>>(this.baseUrl, { params })
+      .pipe(map((res) => res.totalElements));
   }
 
-  create(data: ProductRequest): ProductResponse {
-    const now = new Date().toISOString();
-    const book: ProductResponse = {
-      ...this.resolve(data),
-      id: Math.max(0, ...this._books().map((b) => b.id)) + 1,
-      stock: 0,
-      status: statusFor(0),
-      createdAt: now,
-      updatedAt: now,
-    };
-    this._books.update((books) => [book, ...books]);
-    return book;
+  getById(id: number): Observable<Product> {
+    return this.http.get<ProductDto>(`${this.baseUrl}/${id}`).pipe(map(toProduct));
+  }
+  create(request: ProductRequest): Observable<Product> {
+    return this.http.post<ProductDto>(this.baseUrl, request).pipe(map(toProduct));
   }
 
-  update(id: number, data: ProductRequest): void {
-    this._books.update((books) =>
-      books.map((b) =>
-        b.id === id ? { ...b, ...this.resolve(data), updatedAt: new Date().toISOString() } : b,
-      ),
-    );
+  update(id: number, request: ProductRequest): Observable<Product> {
+    return this.http.put<ProductDto>(`${this.baseUrl}/${id}`, request).pipe(map(toProduct));
   }
 
-  private resolve(data: ProductRequest) {
-    const { authorId, editorialId, genreId, imageUrl, ...rest } = data;
-    return {
-      ...rest,
-      profitMargin: marginFor(data.purchasePrice, data.salePrice),
-      imageUrl: imageUrl ?? PLACEHOLDER_COVER,
-      author: this.authors.find((a) => a.id === authorId)!,
-      editorial: this.editorials.find((e) => e.id === editorialId)!,
-      genre: this.genres.find((g) => g.id === genreId)!,
-    };
-  }
 }

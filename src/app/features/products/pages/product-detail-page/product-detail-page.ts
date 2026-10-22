@@ -1,10 +1,13 @@
-import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { DatePipe, Location } from '@angular/common';
+import { ChangeDetectionStrategy, Component,  inject, signal } from '@angular/core';
+import {  toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { catchError, combineLatest, of, switchMap, tap } from 'rxjs';
 import { Icon } from '../../../../shared/components/icon/icon';
-import { ProductInfoFields } from '../../components/product-info-fields/product-info-fields';
 import { ProductImageCard } from '../../components/product-image-card/product-image-card';
+import { ProductInfoFields } from '../../components/product-info-fields/product-info-fields';
 import { createProductForm, toFormValue } from '../../models/product-form';
 import { ProductsService } from '../../services/products.service';
 
@@ -18,18 +21,49 @@ import { ProductsService } from '../../services/products.service';
 export class ProductDetailPage {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly service = inject(ProductsService);
-  private readonly idParam = inject(ActivatedRoute).snapshot.paramMap.get('id');
 
-  readonly book = this.idParam ? this.service.getById(Number(this.idParam)) : undefined;
   readonly form = createProductForm(this.fb);
+  readonly loading = signal(true);
+  readonly error = signal(false);
+  private readonly reloadTick = signal(0);
+  private readonly location = inject(Location);
+
+
+  readonly product = toSignal(
+    combineLatest([this.route.paramMap, toObservable(this.reloadTick)]).pipe(
+      tap(() => {
+        this.loading.set(true);
+        this.error.set(false);
+      }),
+      switchMap(([params]) => {
+        const id = Number(params.get('id'));
+        if (!Number.isInteger(id) || id <= 0) {
+          this.router.navigate(['/products']);
+          return of(null);
+        }
+        return this.service.getById(id).pipe(
+          tap((product) => this.form.patchValue(toFormValue(product))),
+          catchError((err: HttpErrorResponse) => {
+            if (err.status === 404) this.router.navigate(['/products']);
+            else this.error.set(true);
+            return of(null);
+          }),
+        );
+      }),
+      tap(() => this.loading.set(false)),
+    ),
+    { initialValue: null },
+  );
 
   constructor() {
-    if (!this.book) {
-      this.router.navigate(['/products']);
-      return;
-    }
-    this.form.patchValue(toFormValue(this.book));
     this.form.disable();
+  }
+  back() {
+    this.location.back();
+  }
+  retry() {
+    this.reloadTick.update((n) => n + 1);
   }
 }

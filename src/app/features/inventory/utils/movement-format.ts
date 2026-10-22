@@ -3,7 +3,6 @@ import { InventoryMovement, MovementType } from '../models/inventory';
 const MOVEMENT_LABEL: Record<MovementType, string> = {
   entry: 'Ingreso',
   exit: 'Salida',
-  adjustment: 'Ajuste',
 };
 
 const pad = (n: number) => String(n).padStart(2, '0');
