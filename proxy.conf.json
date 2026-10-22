@@ -14,5 +14,9 @@
   "/api/roles": {
     "target": "http://localhost:8083",
     "secure": false
+  },
+  "/api/payments": {
+    "target": "http://localhost:8080",
+    "secure": false
   }
 }

@@ -16,16 +16,30 @@
     [selectedFilter]="query.filter()"
     [totalCount]="totalCount()"
     (filterChange)="query.setFilter($event)"
-    (searchChange)="query.setSearch($event)"
+    (searchChange)="onSearch($event)"
     (filterClick)="openFilterPanel()"
     (sortClick)="openSortMenu()"
   />
 
+  @if (actionError(); as message) {
+  <p role="alert" class="text-sm font-medium text-danger">{{ message }}</p>
+  } @if (error()) {
+  <div class="py-10 text-center text-pc-grey">
+    <p>No se pudieron cargar los pedidos.</p>
+    <button type="button" class="mt-3 font-medium text-brand underline" (click)="retry()">
+      Reintentar
+    </button>
+  </div>
+  } @else if (loading()) {
+  <p class="py-10 text-center text-pc-grey">Cargando pedidos...</p>
+  } @else {
   <app-data-table [columns]="columns">
-    @for (order of pagedOrders(); track order.id) {
+    @for (order of orders(); track order.id) {
     <tr class="h-[56px] transition-colors hover:bg-table-row-hover">
-      <td class="border-b border-table-divider px-5 py-2 text-base font-medium text-ink">
-        {{ order.id }}
+      <td class="border-b border-table-divider px-5 py-2 text-base font-semibold text-ink-muted">
+        <a [routerLink]="['/orders', order.id]" class="hover:text-ink hover:underline">
+          {{ order.code }}
+        </a>
       </td>
 
       <td class="border-b border-table-divider px-5 py-2 text-base font-semibold text-ink-muted">
@@ -51,7 +65,9 @@
       </td>
 
       <td class="border-b border-table-divider px-5 py-2 text-base text-ink">
-        {{ order.total | currency: 'PEN' : 'S/ ' }}
+        @if (order.total !== null) { {{ order.total | currency: 'PEN' : 'S/ ' }} } @else {
+        <span class="text-ink-soft">—</span>
+        }
       </td>
 
       <td class="border-b border-table-divider px-5 py-2">
@@ -59,13 +75,15 @@
       </td>
 
       <td class="border-b border-table-divider px-5 py-2 text-center">
-        <button
-          type="button"
-          [attr.aria-label]="'Opciones del pedido ' + order.code"
-          class="inline-flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
-        >
-          <app-icon name="more" [size]="12" />
-        </button>
+        @if (order.status === 'pending') {
+        <app-row-actions
+          [label]="'Opciones del pedido ' + order.code"
+          [actions]="rowActions"
+          (selected)="handleAction($event, order)"
+        />
+        } @else {
+        <span class="text-ink-soft">—</span>
+        }
       </td>
     </tr>
     } @empty {
@@ -74,15 +92,16 @@
     </tr>
     }
   </app-data-table>
-
+  } @if (totalCount() > 0) {
   <div class="mt-auto">
     <app-pagination
       [page]="query.page()"
       [pageSize]="query.pageSize()"
       [pageSizeOptions]="pageSizeOptions"
-      [totalItems]="filteredOrders().length"
+      [totalItems]="totalCount()"
       (pageChange)="query.setPage($event)"
       (pageSizeChange)="query.setPageSize($event)"
     />
   </div>
+  }
 </div>

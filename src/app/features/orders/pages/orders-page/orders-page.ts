@@ -1,14 +1,24 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { catchError, debounceTime, distinctUntilChanged, of, Subject, switchMap, tap } from 'rxjs';
+
 import { DataTable, TableColumn } from '../../../../shared/components/data-table/data-table';
 import { FiltersBar } from '../../../../shared/components/filters-bar/filters-bar';
 import { Icon } from '../../../../shared/components/icon/icon';
+import { OrderStatusBadge } from '../../../../shared/components/order-status-badge/order-status-badge';
 import { PageHeader } from '../../../../shared/components/page-header/page-header';
 import { Pagination } from '../../../../shared/components/pagination/pagination';
-import { ListQuery } from '../../../../shared/utils/list-query';
-import { OrdersService } from '../../services/orders.service';
-import { OrderStatusBadge } from '../../../../shared/components/order-status-badge/order-status-badge';
+import { RowAction, RowActions } from '../../../../shared/components/row-actions/row-actions';
 import { ORDER_FILTERS, OrderFilter } from '../../../../shared/models/order-status';
+import { ListQuery } from '../../../../shared/utils/list-query';
+import { Order, STATE_BY_FILTER } from '../../models/order';
+import { OrdersResult, OrdersService } from '../../services/orders.service';
+import { RouterLink } from '@angular/router';
+import { orderErrorMessage } from '../../utils/order-errors';
+
+const EMPTY_RESULT: OrdersResult = { content: [], totalElements: 0 };
 
 @Component({
   imports: [
@@ -20,12 +30,15 @@ import { ORDER_FILTERS, OrderFilter } from '../../../../shared/models/order-stat
     OrderStatusBadge,
     PageHeader,
     Pagination,
+    RowActions,
+    RouterLink
   ],
   selector: 'app-orders-page',
   templateUrl: './orders-page.html',
 })
 export class OrdersPage {
-  private readonly orders = inject(OrdersService).orders;
+  private readonly service = inject(OrdersService);
+  private readonly searchInput$ = new Subject<string>();
 
   readonly columns: TableColumn[] = [
     { key: 'id', label: '#', width: '5%' },
@@ -40,26 +53,90 @@ export class OrdersPage {
 
   readonly filters = ORDER_FILTERS;
   readonly pageSizeOptions = [5, 10, 25, 50];
-  readonly query = new ListQuery<OrderFilter>('all');
+  readonly query = new ListQuery<OrderFilter>('pending');
 
-  totalCount = computed(() => this.orders().length);
+  readonly rowActions: RowAction[] = [
+    { id: 'accept', label: 'Aceptar pago', icon: 'sales' },
+    { id: 'reject', label: 'Rechazar pago', icon: 'circle-danger', danger: true },
+  ];
 
-  filteredOrders = computed(() => {
-    const filter = this.query.filter();
-    const term = this.query.search().trim().toLowerCase();
+  readonly loading = signal(true);
+  readonly error = signal(false);
+  readonly actionError = signal<string | null>(null);
+  private readonly busy = signal(false);
+  private readonly reloadTick = signal(0);
 
-    return this.orders().filter((order) => {
-      const matchesFilter = filter === 'all' || order.status === filter;
-      const matchesSearch =
-        !term ||
-        order.code.toLowerCase().includes(term) ||
-        order.customerName.toLowerCase().includes(term) ||
-        order.items.some((item) => item.productName.toLowerCase().includes(term));
-      return matchesFilter && matchesSearch;
+  private readonly params = computed(() => ({
+    page: this.query.page() - 1,
+    size: this.query.pageSize(),
+    state: STATE_BY_FILTER[this.query.filter()],
+    search: this.query.search(),
+    tick: this.reloadTick(),
+  }));
+
+  private readonly result = toSignal(
+    toObservable(this.params).pipe(
+      tap(() => {
+        this.loading.set(true);
+        this.error.set(false);
+      }),
+      switchMap(({ page, size, state, search }) =>
+        this.service.getPage({ page, size, state, search }).pipe(
+          catchError(() => {
+            this.error.set(true);
+            return of(EMPTY_RESULT);
+          }),
+        ),
+      ),
+      tap(() => this.loading.set(false)),
+    ),
+    { initialValue: EMPTY_RESULT },
+  );
+
+  readonly totalCount = computed(() => this.result().totalElements);
+
+  readonly orders = computed(() => this.result().content);
+  constructor() {
+    this.searchInput$
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
+      .subscribe((term) => this.query.setSearch(term));
+  }
+
+  onSearch(term: string) {
+    this.searchInput$.next(term.trim());
+  }
+  retry() {
+    this.reloadTick.update((n) => n + 1);
+  }
+
+  handleAction(action: string, order: Order) {
+    if (this.busy()) return;
+    const verb = action === 'accept' ? 'aceptar' : 'rechazar';
+    if (
+      !confirm(`¿Seguro que quieres ${verb} el pago de ${order.code}? No se podrá cambiar después.`)
+    )
+      return;
+
+    const request$ =
+      action === 'accept'
+        ? this.service.acceptPayment(order.id)
+        : this.service.rejectPayment(order.id);
+
+    this.busy.set(true);
+    this.actionError.set(null);
+
+    request$.subscribe({
+      next: () => {
+        this.busy.set(false);
+        this.retry();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.busy.set(false);
+        this.actionError.set(orderErrorMessage(err));
+      },
     });
-  });
+  }
 
-  pagedOrders = computed(() => this.query.paginate(this.filteredOrders()));
 
   openFilterPanel() {}
 
