@@ -15,6 +15,8 @@ import { STOCK_FILTERS, StockFilter } from '../../../../shared/models/stock-stat
 import { InventoryItem } from '../../models/inventory';
 import { InventoryService } from '../../services/inventory.service';
 import { movementDate, movementSummary } from '../../utils/movement-format';
+import { LOW_STOCK_THRESHOLD } from '../../../products/models/product';
+import { MovementDialog } from '../../components/movement-dialog/movement-dialog';
 
 const EMPTY_PAGE: PageDto<InventoryItem> = {
   content: [],
@@ -25,9 +27,13 @@ const EMPTY_PAGE: PageDto<InventoryItem> = {
   first: true,
   last: true,
 };
+const MAX_STOCK_BY_FILTER: Partial<Record<StockFilter, number>> = {
+  low: LOW_STOCK_THRESHOLD,
+  out: 0,
+};
 
 @Component({
-  imports: [DataTable, FiltersBar, Icon, PageHeader, Pagination, StockStatusBadge, RouterLink],
+  imports: [DataTable, FiltersBar, Icon, PageHeader, Pagination, StockStatusBadge, RouterLink, MovementDialog],
   selector: 'app-inventory-page',
   templateUrl: './inventory-page.html',
 })
@@ -58,11 +64,13 @@ export class InventoryPage {
   readonly loading = signal(true);
   readonly error = signal(false);
   private readonly reloadTick = signal(0);
+  readonly movementTarget = signal<InventoryItem | null>(null);
 
   private readonly query = computed(() => ({
     page: this.page() - 1,
     size: this.pageSize(),
     search: this.search(),
+    maxStock: MAX_STOCK_BY_FILTER[this.selectedFilter()],
     tick: this.reloadTick(),
   }));
 
@@ -72,8 +80,8 @@ export class InventoryPage {
         this.loading.set(true);
         this.error.set(false);
       }),
-      switchMap(({ page, size, search }) =>
-        this.service.getPage({ page, size, search }).pipe(
+    switchMap(({ page, size, search, maxStock }) =>
+        this.service.getPage({ page, size, search, maxStock }).pipe(
           catchError(() => {
             this.error.set(true);
             return of(EMPTY_PAGE);
@@ -88,9 +96,8 @@ export class InventoryPage {
   readonly totalElements = computed(() => this.result().totalElements);
 
   readonly filteredItems = computed(() => {
-    const filter = this.selectedFilter();
     const all = this.result().content;
-    return filter === 'all' ? all : all.filter((item) => item.status === filter);
+    return this.selectedFilter() === 'available' ? all.filter((item) => item.stock > 0) : all;
   });
 
   constructor() {
@@ -108,6 +115,7 @@ export class InventoryPage {
 
   onFilterChange(filter: StockFilter) {
     this.selectedFilter.set(filter);
+    this.page.set(1);
   }
 
   onPageChange(page: number) {
@@ -127,5 +135,16 @@ export class InventoryPage {
 
   openSortMenu() {}
 
-  registerMovement() {}
+    openMovement(item: InventoryItem) {
+    this.movementTarget.set(item);
+  }
+
+  closeMovement() {
+    this.movementTarget.set(null);
+  }
+
+  onMovementSaved() {
+    this.closeMovement();
+    this.retry(); 
+  }registerMovement() {}
 }

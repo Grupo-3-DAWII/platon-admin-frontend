@@ -59,7 +59,4 @@ export class ProductsService {
     return this.http.put<ProductDto>(`${this.baseUrl}/${id}`, request).pipe(map(toProduct));
   }
 
-  delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}`);
-  }
 }

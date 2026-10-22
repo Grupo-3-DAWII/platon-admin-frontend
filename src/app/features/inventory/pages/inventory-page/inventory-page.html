@@ -1,13 +1,5 @@
 <div class="flex min-h-full flex-col gap-[20px]">
   <app-page-header title="Inventario">
-    <button
-      type="button"
-      class="flex gap-[15px] rounded-[30px] bg-brand px-[16px] py-[12px] text-white"
-      (click)="registerMovement()"
-    >
-      <app-icon name="add" [size]="16"></app-icon>
-      <span class="text-[14px] font-medium">Registrar movimiento</span>
-    </button>
   </app-page-header>
 
   <app-filters-bar
@@ -42,7 +34,7 @@
             [alt]="'Portada de ' + item.name"
           />
           <div>
-            <a [routerLink]="['/products', item.id]" class="block text-base leading-tight text-ink">
+            <a [routerLink]="['/inventory', item.id]" class="block text-base leading-tight text-ink">
               {{ item.name }}
             </a>
             <p class="text-sm text-ink-muted">{{ item.author }}</p>
@@ -74,10 +66,12 @@
       <td class="border-b border-table-divider px-5 py-2 text-center">
         <button
           type="button"
-          [attr.aria-label]="'Opciones de ' + item.name"
+          title="Registrar movimiento"
+          [attr.aria-label]="'Registrar movimiento de ' + item.name"
+          (click)="openMovement(item)"
           class="inline-flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
         >
-          <app-icon name="more" [size]="12" />
+          <app-icon name="add" [size]="12" />
         </button>
       </td>
     </tr>
@@ -100,5 +94,12 @@
       (pageSizeChange)="onPageSizeChange($event)"
     />
   </div>
+  }
+  @if (movementTarget(); as target) {
+  <app-movement-dialog
+    [item]="target"
+    (saved)="onMovementSaved()"
+    (closed)="closeMovement()"
+  />
   }
 </div>

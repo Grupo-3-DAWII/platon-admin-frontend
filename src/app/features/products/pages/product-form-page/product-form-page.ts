@@ -1,17 +1,19 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Icon } from '../../../../shared/components/icon/icon';
 import { ProductInfoFields } from '../../components/product-info-fields/product-info-fields';
 import { createProductForm, toFormValue, toProductRequest } from '../../models/product-form';
 import { ProductsService } from '../../services/products.service';
 import { ProductImageCard } from '../../components/product-image-card/product-image-card';
+import { productErrorMessage } from '../../utils/product-errors';
 
 @Component({
   selector: 'app-product-form-page',
-  imports: [Icon, ReactiveFormsModule, RouterLink, ProductInfoFields, ProductImageCard],
+  imports: [Icon, ReactiveFormsModule,  ProductInfoFields, ProductImageCard],
   styleUrl: '../../style/products.css',
   templateUrl: './product-form-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,7 +34,12 @@ export class ProductFormPage {
   readonly loading = signal(this.isEdit);
   readonly loadError = signal(false);
   readonly saving = signal(false);
-  readonly saveError = signal(false);
+  readonly saveError = signal<string | null>(null);
+  private readonly location = inject(Location);
+
+  back() {
+    this.location.back();
+  }
 
   constructor() {
     if (this.bookId === null) return;
@@ -57,7 +64,7 @@ export class ProductFormPage {
     if (this.form.invalid || this.saving()) return;
 
     this.saving.set(true);
-    this.saveError.set(false);
+    this.saveError.set(null);
 
     const request = toProductRequest(this.form.getRawValue(), this.imagePreview());
     const request$ =
@@ -66,10 +73,10 @@ export class ProductFormPage {
         : this.service.update(this.bookId, request);
 
     request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => this.router.navigate(this.isEdit ? this.backLink : ['/products']),
-      error: () => {
+      next: () => this.router.navigate(this.isEdit ? this.backLink : ['/products'], { replaceUrl: true }),
+      error: (err: HttpErrorResponse) => {
         this.saving.set(false);
-        this.saveError.set(true);
+        this.saveError.set(productErrorMessage(err));
       },
     });
   }
@@ -91,14 +98,10 @@ export class ProductFormPage {
           this.imagePreview.set(product.imageUrl);
           this.loading.set(false);
         },
-        error: (err: HttpErrorResponse) => {
-          if (err.status === 404) {
-            this.router.navigate(['/products']);
-            return;
-          }
-          this.loading.set(false);
-          this.loadError.set(true);
-        },
+      error: (err: HttpErrorResponse) => {
+        this.saving.set(false);
+        this.saveError.set(productErrorMessage(err ));
+      },
       });
   }
 }

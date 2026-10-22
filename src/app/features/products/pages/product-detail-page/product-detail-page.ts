@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { DatePipe, Location } from '@angular/common';
+import { ChangeDetectionStrategy, Component,  inject, signal } from '@angular/core';
+import {  toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { catchError, combineLatest, of, switchMap, tap } from 'rxjs';
@@ -28,6 +28,8 @@ export class ProductDetailPage {
   readonly loading = signal(true);
   readonly error = signal(false);
   private readonly reloadTick = signal(0);
+  private readonly location = inject(Location);
+
 
   readonly product = toSignal(
     combineLatest([this.route.paramMap, toObservable(this.reloadTick)]).pipe(
@@ -58,7 +60,9 @@ export class ProductDetailPage {
   constructor() {
     this.form.disable();
   }
-
+  back() {
+    this.location.back();
+  }
   retry() {
     this.reloadTick.update((n) => n + 1);
   }

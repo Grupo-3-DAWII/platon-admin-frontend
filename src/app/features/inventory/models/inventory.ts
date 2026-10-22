@@ -17,6 +17,12 @@ export interface StockMovementDto {
   createdAt: string;
 }
 
+export interface StockMovementRequest {
+  type: MovementTypeDto;
+  quantity: number; 
+  notes?: string; 
+}
+
 export interface InventoryItemDto {
   idProduct: number;
   name: string;
@@ -36,6 +42,8 @@ export interface InventoryMovement {
   type: MovementType;
   quantity: number; // entrada +, salida -
   date: string;
+  resultingStock: number;
+  notes: string | null;
 }
 
 export interface InventoryItem {
@@ -57,6 +65,8 @@ export const toInventoryMovement = (d: StockMovementDto): InventoryMovement => (
   type: d.type === 'ENTRY' ? 'entry' : 'exit',
   quantity: d.type === 'ENTRY' ? d.quantity : -d.quantity,
   date: d.movementDate,
+  resultingStock: d.resultingStock,
+  notes: d.notes,
 });
 
 export const toInventoryItem = (d: InventoryItemDto): InventoryItem => ({

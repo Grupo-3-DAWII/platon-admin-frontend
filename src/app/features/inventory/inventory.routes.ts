@@ -6,4 +6,11 @@ export const INVENTORY_ROUTES: Routes = [
     loadComponent: () =>
       import('./pages/inventory-page/inventory-page').then((m) => m.InventoryPage),
   },
+  {
+    path: ':id',
+    loadComponent: () =>
+      import('./pages/movement-history-page/movement-history-page').then(
+        (m) => m.MovementHistoryPage,
+      ),
+  },
 ];

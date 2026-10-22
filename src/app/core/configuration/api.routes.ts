@@ -11,6 +11,6 @@ export const API_ROUTES = {
     base:'/api/products',
     editorials: '/api/products/editorials',
     genres: '/api/products/genres', 
+   stockMovements: (productId: number) => `/api/products/${productId}/stock-movements`,
   },
-  inventory: '/api/inventory',
   } as const;

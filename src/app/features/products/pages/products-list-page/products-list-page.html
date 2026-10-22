@@ -19,7 +19,6 @@
     (filterClick)="openFilterPanel()"
     (sortClick)="openSortMenu()"
   />
-
   @if (error()) {
   <div class="py-10 text-center text-pc-grey">
     <p>No se pudieron cargar los productos.</p>
@@ -32,7 +31,7 @@
   } @else {
   <div class="grid grid-cols-4 gap-[24px]">
     @for (book of filteredProducts(); track book.id) {
-    <app-product-card [book]="book" />
+        <app-product-card [book]="book" />
     } @empty {
     <p class="col-span-4 py-10 text-center text-pc-grey">No hay productos para mostrar.</p>
     }

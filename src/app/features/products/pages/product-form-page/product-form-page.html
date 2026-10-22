@@ -10,13 +10,14 @@
 } @else {
 <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-6">
   <header class="flex items-center gap-[15px]">
-    <a
-      [routerLink]="backLink"
-      [attr.aria-label]="isEdit ? 'Volver al detalle' : 'Volver a productos'"
+    <button
+      type="button"
+      (click)="back()"
+      aria-label="Volver"
       class="flex size-[40px] items-center justify-center rounded-full hover:bg-neutral-100"
     >
       <app-icon name="left-arrow" [size]="18"></app-icon>
-    </a>
+    </button>
     <h1 class="flex-1 text-[24px] font-bold text-ink">
       {{ isEdit ? 'Editar producto' : 'Nuevo producto' }}
     </h1>
@@ -56,10 +57,8 @@
     </div>
   </div>
 
-  @if (saveError()) {
-  <p role="alert" class="text-sm font-medium text-danger">
-    No se pudo guardar el producto. Revisa los datos e inténtalo de nuevo.
-  </p>
+  @if (saveError(); as message) {
+  <p role="alert" class="text-sm font-medium text-danger">{{ message }}</p>
   }
 
   <div class="flex justify-between">
