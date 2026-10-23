@@ -15,9 +15,10 @@ export const API_ROUTES = {
     stockMovements: (productId: number) => `/api/products/${productId}/stock-movements`,
   },
   payments: {
-    orders: '/api/v1/payments/orders',
-    orderById: (id: number) => `/api/v1/payments/orders/${id}`,
-    acceptOrder: (id: number) => `/api/payments/orders/${id}/payment/accept`,
-    rejectOrder: (id: number) => `/api/payments/orders/${id}/payment/reject`,
+    orders: '/api/products-sold',
+    orderById: (id: number) => `/api/products-sold/${id}`,
+    acceptOrder: (id: number) => `/api/products-sold/${id}/payment/accept`,
+    rejectOrder: (id: number) => `/api/products-sold/${id}/payment/reject`,
+    states: '/api/states-sold',
   },
 } as const;

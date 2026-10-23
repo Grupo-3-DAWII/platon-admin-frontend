@@ -6,6 +6,7 @@ const ORDER_STATUS_BADGE: Record<OrderStatus, { label: string; variant: BadgeVar
   paid: { label: 'Pagado', variant: 'success' },
   pending: { label: 'Pendiente', variant: 'warning' },
   cancelled: { label: 'Cancelado', variant: 'danger' },
+  unknown: { label: 'Desconocido', variant: 'neutral' },
 };
 
 @Component({

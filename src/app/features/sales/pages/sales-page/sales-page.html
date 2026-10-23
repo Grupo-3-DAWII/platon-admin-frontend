@@ -2,13 +2,11 @@
   <app-page-header title="Ventas" subtitle="Consulta los pedidos con pago aceptado" />
 
   <app-filters-bar
-    searchPlaceholder="Buscar por pedido, cliente o producto..."
+    searchPlaceholder="Buscar por cliente o producto..."
     [filters]="filters"
     [selectedFilter]="query.filter()"
     [totalCount]="totalCount()"
     (searchChange)="onSearch($event)"
-    (filterClick)="openFilterPanel()"
-    (sortClick)="openSortMenu()"
   />
 
   @if (error()) {
@@ -26,10 +24,6 @@
     <tr class="h-[56px] transition-colors hover:bg-table-row-hover">
       <td class="border-b border-table-divider px-5 py-2 text-base font-medium text-ink">
         {{ sale.id }}
-      </td>
-
-      <td class="border-b border-table-divider px-5 py-2 text-base font-semibold text-ink-muted">
-        {{ sale.code }}
       </td>
 
       <td class="border-b border-table-divider px-5 py-2 text-base text-ink">
@@ -58,7 +52,7 @@
     </tr>
     } @empty {
     <tr>
-      <td colspan="6" class="py-10 text-center text-pc-grey">No hay ventas para mostrar.</td>
+      <td colspan="5" class="py-10 text-center text-pc-grey">No hay ventas para mostrar.</td>
     </tr>
     }
   </app-data-table>

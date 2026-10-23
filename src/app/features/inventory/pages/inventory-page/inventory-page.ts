@@ -33,7 +33,16 @@ const MAX_STOCK_BY_FILTER: Partial<Record<StockFilter, number>> = {
 };
 
 @Component({
-  imports: [DataTable, FiltersBar, Icon, PageHeader, Pagination, StockStatusBadge, RouterLink, MovementDialog],
+  imports: [
+    DataTable,
+    FiltersBar,
+    Icon,
+    PageHeader,
+    Pagination,
+    StockStatusBadge,
+    RouterLink,
+    MovementDialog,
+  ],
   selector: 'app-inventory-page',
   templateUrl: './inventory-page.html',
 })
@@ -80,7 +89,7 @@ export class InventoryPage {
         this.loading.set(true);
         this.error.set(false);
       }),
-    switchMap(({ page, size, search, maxStock }) =>
+      switchMap(({ page, size, search, maxStock }) =>
         this.service.getPage({ page, size, search, maxStock }).pipe(
           catchError(() => {
             this.error.set(true);
@@ -131,11 +140,7 @@ export class InventoryPage {
     this.reloadTick.update((n) => n + 1);
   }
 
-  openFilterPanel() {}
-
-  openSortMenu() {}
-
-    openMovement(item: InventoryItem) {
+  openMovement(item: InventoryItem) {
     this.movementTarget.set(item);
   }
 
@@ -145,6 +150,6 @@ export class InventoryPage {
 
   onMovementSaved() {
     this.closeMovement();
-    this.retry(); 
-  }registerMovement() {}
+    this.retry();
+  }
 }

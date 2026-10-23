@@ -2,7 +2,16 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, debounceTime, distinctUntilChanged, of, Subject, switchMap, tap } from 'rxjs';
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  Observable,
+  of,
+  Subject,
+  switchMap,
+  tap,
+} from 'rxjs';
 
 import { DataTable, TableColumn } from '../../../../shared/components/data-table/data-table';
 import { FiltersBar } from '../../../../shared/components/filters-bar/filters-bar';
@@ -31,7 +40,7 @@ const EMPTY_RESULT: OrdersResult = { content: [], totalElements: 0 };
     PageHeader,
     Pagination,
     RowActions,
-    RouterLink
+    RouterLink,
   ],
   selector: 'app-orders-page',
   templateUrl: './orders-page.html',
@@ -41,14 +50,13 @@ export class OrdersPage {
   private readonly searchInput$ = new Subject<string>();
 
   readonly columns: TableColumn[] = [
-    { key: 'id', label: '#', width: '5%' },
-    { key: 'code', label: 'Pedido ID', width: '13%' },
-    { key: 'customer', label: 'Cliente', width: '17%' },
-    { key: 'product', label: 'Producto', width: '22%' },
+    { key: 'id', label: '#', width: '8%' },
+    { key: 'customer', label: 'Cliente', width: '20%' },
+    { key: 'product', label: 'Producto', width: '24%' },
     { key: 'date', label: 'Fecha', width: '12%' },
-    { key: 'total', label: 'Total', width: '11%' },
+    { key: 'total', label: 'Total', width: '12%' },
     { key: 'status', label: 'Estado', width: '12%' },
-    { key: 'actions', label: 'Acciones', width: '8%', align: 'center' },
+    { key: 'actions', label: 'Acciones', width: '12%', align: 'center' },
   ];
 
   readonly filters = ORDER_FILTERS;
@@ -88,7 +96,12 @@ export class OrdersPage {
           }),
         ),
       ),
-      tap(() => this.loading.set(false)),
+      tap((res) => {
+        this.loading.set(false);
+        if (this.error()) return;
+        const lastPage = Math.max(1, Math.ceil(res.totalElements / this.query.pageSize()));
+        if (this.query.page() > lastPage) this.query.setPage(lastPage);
+      }),
     ),
     { initialValue: EMPTY_RESULT },
   );
@@ -111,15 +124,21 @@ export class OrdersPage {
 
   handleAction(action: string, order: Order) {
     if (this.busy()) return;
+    if (action === 'accept' && order.total === null) {
+      this.actionError.set('Este pedido no tiene un total definido, no se puede aceptar el pago.');
+      return;
+    }
     const verb = action === 'accept' ? 'aceptar' : 'rechazar';
     if (
-      !confirm(`¿Seguro que quieres ${verb} el pago de ${order.code}? No se podrá cambiar después.`)
+      !confirm(
+        `¿Seguro que quieres ${verb} el pago del pedido #${order.id}? No se podrá cambiar después.`,
+      )
     )
       return;
 
-    const request$ =
+    const request$: Observable<void> =
       action === 'accept'
-        ? this.service.acceptPayment(order.id)
+        ? this.service.acceptPayment(order.id, order.total!)
         : this.service.rejectPayment(order.id);
 
     this.busy.set(true);
@@ -136,11 +155,4 @@ export class OrdersPage {
       },
     });
   }
-
-
-  openFilterPanel() {}
-
-  openSortMenu() {}
-
-  createOrder() {}
 }

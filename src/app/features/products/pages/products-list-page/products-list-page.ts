@@ -41,7 +41,7 @@ export class ProductsListPage {
 
   readonly selectedFilter = signal<StockFilter>('all');
   readonly search = signal('');
-  readonly page = signal(1); 
+  readonly page = signal(1);
   readonly pageSize = signal(12);
   readonly loading = signal(true);
   readonly error = signal(false);
@@ -111,7 +111,4 @@ export class ProductsListPage {
   retry() {
     this.reloadTick.update((n) => n + 1);
   }
-
-  openFilterPanel() {}
-  openSortMenu() {}
 }

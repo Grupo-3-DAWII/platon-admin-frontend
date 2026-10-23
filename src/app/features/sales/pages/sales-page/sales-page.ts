@@ -10,6 +10,7 @@ import { Pagination } from '../../../../shared/components/pagination/pagination'
 import { FilterOption } from '../../../../shared/models/filter-option';
 import { ListQuery } from '../../../../shared/utils/list-query';
 import { OrdersResult, OrdersService } from '../../../orders/services/orders.service';
+import { STATE_BY_FILTER } from '../../../orders/models/order';
 
 const EMPTY_RESULT: OrdersResult = { content: [], totalElements: 0 };
 
@@ -23,12 +24,11 @@ export class SalesPage {
   private readonly searchInput$ = new Subject<string>();
 
   readonly columns: TableColumn[] = [
-    { key: 'id', label: '#', width: '6%' },
-    { key: 'order', label: 'Pedido ID', width: '14%' },
-    { key: 'customer', label: 'Cliente', width: '22%' },
-    { key: 'product', label: 'Producto', width: '28%' },
-    { key: 'date', label: 'Fecha', width: '14%' },
-    { key: 'total', label: 'Total', width: '16%' },
+    { key: 'id', label: '#', width: '8%' },
+    { key: 'customer', label: 'Cliente', width: '26%' },
+    { key: 'product', label: 'Producto', width: '30%' },
+    { key: 'date', label: 'Fecha', width: '16%' },
+    { key: 'total', label: 'Total', width: '20%' },
   ];
 
   readonly filters: FilterOption<'all'>[] = [{ value: 'all', label: 'Pagadas' }];
@@ -53,14 +53,19 @@ export class SalesPage {
         this.error.set(false);
       }),
       switchMap(({ page, size, search }) =>
-        this.service.getPage({ page, size, state: 'PAGADO', search }).pipe(
+        this.service.getPage({ page, size, state: STATE_BY_FILTER.paid, search }).pipe(
           catchError(() => {
             this.error.set(true);
             return of(EMPTY_RESULT);
           }),
         ),
       ),
-      tap(() => this.loading.set(false)),
+      tap((res) => {
+        this.loading.set(false);
+        if (this.error()) return;
+        const lastPage = Math.max(1, Math.ceil(res.totalElements / this.query.pageSize()));
+        if (this.query.page() > lastPage) this.query.setPage(lastPage);
+      }),
     ),
     { initialValue: EMPTY_RESULT },
   );
@@ -81,8 +86,4 @@ export class SalesPage {
   retry() {
     this.reloadTick.update((n) => n + 1);
   }
-
-  openFilterPanel() {}
-
-  openSortMenu() {}
 }

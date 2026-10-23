@@ -20,7 +20,7 @@
     </button>
 
     <div class="min-w-0 flex-1">
-      <h1 class="truncate text-[24px] font-bold text-ink">Pedido {{ current.code }}</h1>
+      <h1 class="truncate text-[24px] font-bold text-ink">Pedido #{{ current.id }}</h1>
       <p class="text-sm font-medium text-pc-grey">
         {{ current.customerName }} · {{ current.createdAt | date: 'dd-MM-yyyy' }}
       </p>
@@ -66,7 +66,7 @@
         }
       </td>
       <td class="border-b border-table-divider px-5 py-2 text-base text-ink">
-        @if (subtotal(item) !== null) { {{ subtotal(item) | currency: 'PEN' : 'S/ ' }} } @else {
+        @if (item.subtotal !== null) { {{ item.subtotal | currency: 'PEN' : 'S/ ' }} } @else {
         <span class="text-ink-soft">—</span>
         }
       </td>

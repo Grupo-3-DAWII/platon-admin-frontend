@@ -1,25 +1,30 @@
-import { FilterOption } from '../../../shared/models/filter-option';
 import { OrderFilter, OrderStatus } from '../../../shared/models/order-status';
-
-
 
 // --- Backend ---
 
+export interface OrderProductDto {
+  name: string;
+  isbn: string;
+  author: string;
+  imageUrl?: string | null;
+}
+
 export interface OrderItemDto {
   idProducts: number;
-  productName: string;
-  isbn: string;
   numberSold: number;
+  product: OrderProductDto | null;
   unitPrice: number | null;
+  subtotal: number | null;
 }
 
 export interface OrderDto {
-  idOrder: number;
+  idProductsSold: number;
+  idUser: number;
   createDate: string;
   stateSold: { idStateSold: number; nameState: string };
-  buyer: { idUser: number; name: string; lastname: string } | null;
-  items: OrderItemDto[];
-  total: number | null;
+  buyer: { name: string; lastname: string } | null;
+  products: OrderItemDto[];
+  totalAmount: number | null;
 }
 
 export interface OrdersPageDto {
@@ -28,6 +33,7 @@ export interface OrdersPageDto {
   size: number;
   totalElements: number;
   totalPages: number;
+  message?: string | null;
 }
 
 // --- Modelo que usa la UI ---
@@ -37,11 +43,11 @@ export interface OrderLine {
   productName: string;
   quantity: number;
   unitPrice: number | null;
+  subtotal: number | null;
 }
 
 export interface Order {
   id: number;
-  code: string;
   customerName: string;
   items: OrderLine[];
   total: number | null;
@@ -62,16 +68,31 @@ export const STATE_BY_FILTER: Partial<Record<OrderFilter, string>> = {
 };
 
 export const toOrder = (d: OrderDto): Order => ({
-  id: d.idOrder,
-  code: `PED${String(d.idOrder).padStart(4, '0')}`,
+  id: d.idProductsSold,
   customerName: d.buyer ? `${d.buyer.name} ${d.buyer.lastname}`.trim() : 'Cliente desconocido',
-  items: d.items.map((i) => ({
+  items: (d.products ?? []).map((i) => ({
     productId: i.idProducts,
-    productName: i.productName,
+    productName: i.product?.name ?? `Producto #${i.idProducts}`,
     quantity: i.numberSold,
     unitPrice: i.unitPrice,
+    subtotal: i.subtotal,
   })),
-  total: d.total,
-  status: STATUS_BY_STATE[d.stateSold.nameState.toUpperCase()] ?? 'pending',
+  total: d.totalAmount,
+  status: STATUS_BY_STATE[d.stateSold.nameState.toUpperCase()] ?? 'unknown',
   createdAt: d.createDate,
 });
+export interface OrderStateDto {
+  idStateSold: number;
+  nameState: string;
+}
+
+export interface PurchaseRequest {
+  idUser: number;
+  idStateSold: number;
+  products: { idProducts: number; numberSold: number }[];
+  totalAmount: number;
+}
+
+export interface PurchaseResponseDto {
+  idProductsSold: number;
+}

@@ -1,10 +1,18 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { EMPTY, expand, map, Observable, reduce } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
 import { API_ROUTES } from '../../../core/configuration/api.routes';
-import { Order, OrderDto, OrdersPageDto, toOrder } from '../models/order';
+import {
+  Order,
+  OrderDto,
+  OrdersPageDto,
+  OrderStateDto,
+  PurchaseRequest,
+  PurchaseResponseDto,
+  toOrder,
+} from '../models/order';
 
 export interface OrdersQuery {
   page?: number;
@@ -39,15 +47,38 @@ export class OrdersService {
       .get<OrderDto>(`${environment.apiUrl}${API_ROUTES.payments.orderById(id)}`)
       .pipe(map(toOrder));
   }
-  acceptPayment(id: number): Observable<Order> {
+  acceptPayment(id: number, amount: number): Observable<void> {
     return this.http
-      .post<OrderDto>(`${environment.apiUrl}${API_ROUTES.payments.acceptOrder(id)}`, null)
-      .pipe(map(toOrder));
+      .post<unknown>(`${environment.apiUrl}${API_ROUTES.payments.acceptOrder(id)}`, { amount })
+      .pipe(map(() => undefined));
   }
 
-  rejectPayment(id: number): Observable<Order> {
+  rejectPayment(id: number): Observable<void> {
     return this.http
-      .post<OrderDto>(`${environment.apiUrl}${API_ROUTES.payments.rejectOrder(id)}`, null)
-      .pipe(map(toOrder));
+      .post<unknown>(`${environment.apiUrl}${API_ROUTES.payments.rejectOrder(id)}`, null)
+      .pipe(map(() => undefined));
+  }
+  getStates(): Observable<OrderStateDto[]> {
+    return this.http.get<OrderStateDto[]>(`${environment.apiUrl}${API_ROUTES.payments.states}`);
+  }
+
+  create(request: PurchaseRequest): Observable<number> {
+    return this.http
+      .post<PurchaseResponseDto>(`${environment.apiUrl}${API_ROUTES.payments.orders}`, request)
+      .pipe(map((res) => res.idProductsSold));
+  }
+  private fetchPage(page: number, size: number): Observable<OrdersPageDto> {
+    const params = new HttpParams().set('page', page).set('size', size);
+    return this.http.get<OrdersPageDto>(`${environment.apiUrl}${API_ROUTES.payments.orders}`, {
+      params,
+    });
+  }
+
+  /** Trae todas las paginas para calcular reportes. */
+  getAll(): Observable<Order[]> {
+    return this.fetchPage(0, 100).pipe(
+      expand((res, i) => (i + 1 >= res.totalPages ? EMPTY : this.fetchPage(i + 1, 100))),
+      reduce((all, res) => all.concat(res.content.map(toOrder)), [] as Order[]),
+    );
   }
 }

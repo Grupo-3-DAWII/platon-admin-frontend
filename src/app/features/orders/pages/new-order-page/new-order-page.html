@@ -1,0 +1,120 @@
+<div class="flex flex-col gap-[20px]">
+  <header class="flex items-center gap-[15px]">
+    <button
+      type="button"
+      (click)="back()"
+      aria-label="Volver"
+      class="flex size-[40px] items-center justify-center rounded-full hover:bg-neutral-100"
+    >
+      <app-icon name="left-arrow" [size]="18"></app-icon>
+    </button>
+    <div class="min-w-0 flex-1">
+      <h1 class="truncate text-[24px] font-bold text-ink">Nuevo pedido</h1>
+      <p class="text-sm font-medium text-pc-grey">
+        Registra un pedido para probar el flujo de pagos
+      </p>
+    </div>
+  </header>
+
+  <label class="flex max-w-[480px] flex-col gap-1 text-sm font-medium text-ink-muted">
+    Cliente
+    <select
+      class="rounded-control border border-table-divider bg-white px-3 py-2.5 text-base text-ink"
+      (change)="selectCustomer($event)"
+    >
+      <option value="">Selecciona un cliente</option>
+      @for (c of customers(); track c.id) {
+      <option [value]="c.id">{{ c.fullName }} ({{ c.username }})</option>
+      }
+    </select>
+  </label>
+  <section class="flex flex-col gap-3">
+    <h2 class="text-base font-semibold text-ink">Productos</h2>
+    <input
+      type="search"
+      placeholder="Buscar producto por nombre, autor o ISBN"
+      class="rounded-control border border-table-divider bg-white px-3 py-2.5 text-base text-ink"
+      (input)="onSearch($event)"
+    />
+
+    <ul class="divide-y divide-table-divider rounded-control border border-table-divider">
+      @for (p of results(); track p.id) {
+      <li class="flex items-center justify-between gap-3 px-4 py-2">
+        <div class="min-w-0">
+          <p class="truncate text-base font-medium text-ink">{{ p.name }}</p>
+          <p class="text-xs text-ink-muted">
+            {{ p.author }} · {{ p.salePrice | currency: 'PEN' : 'S/ ' }} · Stock: {{ p.stock }}
+          </p>
+        </div>
+        <button
+          type="button"
+          class="rounded-[30px] bg-brand px-[14px] py-[8px] text-[14px] font-medium text-white"
+          (click)="add(p)"
+        >
+          Agregar
+        </button>
+      </li>
+      } @empty {
+      <li class="px-4 py-6 text-center text-pc-grey">No se encontraron productos.</li>
+      }
+    </ul>
+  </section>
+
+  <section class="flex flex-col gap-3">
+    <h2 class="text-base font-semibold text-ink">Detalle del pedido</h2>
+
+    <ul class="divide-y divide-table-divider rounded-control border border-table-divider">
+      @for (l of lines(); track l.product.id) {
+      <li class="flex items-center gap-3 px-4 py-2">
+        <span class="min-w-0 flex-1 truncate text-base text-ink">{{ l.product.name }}</span>
+        <input
+          type="number"
+          min="1"
+          [value]="l.quantity"
+          (change)="setQuantity(l.product.id, $event)"
+          [attr.aria-label]="'Cantidad de ' + l.product.name"
+          class="w-[80px] rounded-control border border-table-divider px-2 py-1.5 text-base text-ink"
+        />
+        <span class="w-[110px] text-right text-base text-ink">
+          {{ l.product.salePrice * l.quantity | currency: 'PEN' : 'S/ ' }}
+        </span>
+        <button
+          type="button"
+          class="text-sm font-medium text-danger"
+          (click)="remove(l.product.id)"
+        >
+          Quitar
+        </button>
+      </li>
+      } @empty {
+      <li class="px-4 py-6 text-center text-pc-grey">Agrega al menos un producto.</li>
+      }
+    </ul>
+
+    <div class="flex justify-end gap-3 pr-4 text-base">
+      <span class="font-medium text-ink-muted">Total</span>
+      <span class="font-semibold text-ink">{{ total() | currency: 'PEN' : 'S/ ' }}</span>
+    </div>
+  </section>
+
+  @if (error(); as message) {
+  <p role="alert" class="text-sm font-medium text-danger">{{ message }}</p>
+  }
+
+  <div class="flex justify-end gap-3">
+    <a
+      routerLink="/orders"
+      class="rounded-[30px] border-2 border-brand px-[16px] py-[10px] text-[14px] font-medium text-brand"
+    >
+      Cancelar
+    </a>
+    <button
+      type="button"
+      [disabled]="!canSubmit()"
+      (click)="submit()"
+      class="rounded-[30px] bg-brand px-[16px] py-[12px] text-[14px] font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      {{ submitting() ? 'Creando...' : 'Crear pedido' }}
+    </button>
+  </div>
+</div>
