@@ -43,6 +43,7 @@ function getCssVariable(name: string): string {
   selector: 'app-reports-page',
   standalone: true,
   imports: [CurrencyPipe, DatePipe, DataTable, Icon, NgApexchartsModule, PageHeader, Pagination],
+  providers: [ReportsService],
   templateUrl: './reports-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

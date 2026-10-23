@@ -1,72 +1,89 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { catchError, debounceTime, distinctUntilChanged, of, Subject, switchMap, tap } from 'rxjs';
+
 import { DataTable, TableColumn } from '../../../../shared/components/data-table/data-table';
 import { FiltersBar } from '../../../../shared/components/filters-bar/filters-bar';
-import { Icon } from '../../../../shared/components/icon/icon';
-import { OrderStatusBadge } from '../../../../shared/components/order-status-badge/order-status-badge';
 import { PageHeader } from '../../../../shared/components/page-header/page-header';
 import { Pagination } from '../../../../shared/components/pagination/pagination';
-import { ORDER_FILTERS, OrderFilter } from '../../../../shared/models/order-status';
+import { FilterOption } from '../../../../shared/models/filter-option';
 import { ListQuery } from '../../../../shared/utils/list-query';
-import { PaymentStatusBadge } from '../../components/payment-status-badge/payment-status-badge';
-import { SalesService } from '../../services/sales.service';
-import { RouterLink } from '@angular/router';
+import { OrdersResult, OrdersService } from '../../../orders/services/orders.service';
+import { STATE_BY_FILTER } from '../../../orders/models/order';
+
+const EMPTY_RESULT: OrdersResult = { content: [], totalElements: 0 };
 
 @Component({
-  imports: [
-    RouterLink,
-    CurrencyPipe,
-    DataTable,
-    DatePipe,
-    FiltersBar,
-    Icon,
-    OrderStatusBadge,
-    PageHeader,
-    Pagination,
-    PaymentStatusBadge,
-  ],
+  imports: [CurrencyPipe, DataTable, DatePipe, FiltersBar, PageHeader, Pagination],
   selector: 'app-sales-page',
   templateUrl: './sales-page.html',
 })
 export class SalesPage {
-  private readonly sales = inject(SalesService).sales;
+  private readonly service = inject(OrdersService);
+  private readonly searchInput$ = new Subject<string>();
 
   readonly columns: TableColumn[] = [
-    { key: 'id', label: '#', width: '5%' },
-    { key: 'code', label: 'Venta ID', width: '11%' },
-    { key: 'order', label: 'Pedido ID', width: '12%' },
-    { key: 'customer', label: 'Cliente', width: '17%' },
-    { key: 'date', label: 'Fecha', width: '11%' },
-    { key: 'total', label: 'Total', width: '11%' },
-    { key: 'payment', label: 'Pago', width: '12%' },
-    { key: 'status', label: 'Estado', width: '12%' },
-    { key: 'actions', label: 'Acciones', width: '9%', align: 'center' },
+    { key: 'id', label: '#', width: '8%' },
+    { key: 'customer', label: 'Cliente', width: '26%' },
+    { key: 'product', label: 'Producto', width: '30%' },
+    { key: 'date', label: 'Fecha', width: '16%' },
+    { key: 'total', label: 'Total', width: '20%' },
   ];
 
-  readonly filters = ORDER_FILTERS;
+  readonly filters: FilterOption<'all'>[] = [{ value: 'all', label: 'Pagadas' }];
   readonly pageSizeOptions = [5, 10, 25, 50];
-  readonly query = new ListQuery<OrderFilter>('all');
+  readonly query = new ListQuery<'all'>('all');
 
-  totalCount = computed(() => this.sales().length);
+  readonly loading = signal(true);
+  readonly error = signal(false);
+  private readonly reloadTick = signal(0);
 
-  filteredSales = computed(() => {
-    const filter = this.query.filter();
-    const term = this.query.search().trim().toLowerCase();
+  private readonly params = computed(() => ({
+    page: this.query.page() - 1,
+    size: this.query.pageSize(),
+    search: this.query.search(),
+    tick: this.reloadTick(),
+  }));
 
-    return this.sales().filter((sale) => {
-      const matchesFilter = filter === 'all' || sale.status === filter;
-      const matchesSearch =
-        !term ||
-        sale.code.toLowerCase().includes(term) ||
-        sale.orderCode.toLowerCase().includes(term) ||
-        sale.customerName.toLowerCase().includes(term);
-      return matchesFilter && matchesSearch;
-    });
-  });
+  private readonly result = toSignal(
+    toObservable(this.params).pipe(
+      tap(() => {
+        this.loading.set(true);
+        this.error.set(false);
+      }),
+      switchMap(({ page, size, search }) =>
+        this.service.getPage({ page, size, state: STATE_BY_FILTER.paid, search }).pipe(
+          catchError(() => {
+            this.error.set(true);
+            return of(EMPTY_RESULT);
+          }),
+        ),
+      ),
+      tap((res) => {
+        this.loading.set(false);
+        if (this.error()) return;
+        const lastPage = Math.max(1, Math.ceil(res.totalElements / this.query.pageSize()));
+        if (this.query.page() > lastPage) this.query.setPage(lastPage);
+      }),
+    ),
+    { initialValue: EMPTY_RESULT },
+  );
 
-  pagedSales = computed(() => this.query.paginate(this.filteredSales()));
+  readonly sales = computed(() => this.result().content);
+  readonly totalCount = computed(() => this.result().totalElements);
 
-  openFilterPanel() {}
+  constructor() {
+    this.searchInput$
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
+      .subscribe((term) => this.query.setSearch(term));
+  }
 
-  openSortMenu() {}
+  onSearch(term: string) {
+    this.searchInput$.next(term.trim());
+  }
+
+  retry() {
+    this.reloadTick.update((n) => n + 1);
+  }
 }

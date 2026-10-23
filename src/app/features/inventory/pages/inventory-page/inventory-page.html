@@ -1,6 +1,5 @@
 <div class="flex min-h-full flex-col gap-[20px]">
-  <app-page-header title="Inventario">
-  </app-page-header>
+  <app-page-header title="Inventario"> </app-page-header>
 
   <app-filters-bar
     searchPlaceholder="Buscar productos"
@@ -9,8 +8,6 @@
     [totalCount]="totalElements()"
     (filterChange)="onFilterChange($event)"
     (searchChange)="onSearch($event)"
-    (filterClick)="openFilterPanel()"
-    (sortClick)="openSortMenu()"
   />
 
   @if (error()) {
@@ -34,7 +31,10 @@
             [alt]="'Portada de ' + item.name"
           />
           <div>
-            <a [routerLink]="['/inventory', item.id]" class="block text-base leading-tight text-ink">
+            <a
+              [routerLink]="['/inventory', item.id]"
+              class="block text-base leading-tight text-ink"
+            >
               {{ item.name }}
             </a>
             <p class="text-sm text-ink-muted">{{ item.author }}</p>
@@ -42,13 +42,9 @@
         </div>
       </td>
 
-      <td class="border-b border-table-divider px-5 py-2 text-base text-ink">
-        {{ item.genre }}
-      </td>
+      <td class="border-b border-table-divider px-5 py-2 text-base text-ink">{{ item.genre }}</td>
 
-      <td class="border-b border-table-divider px-6 py-2 text-base text-ink">
-        {{ item.stock }}
-      </td>
+      <td class="border-b border-table-divider px-6 py-2 text-base text-ink">{{ item.stock }}</td>
 
       <td class="border-b border-table-divider px-5 py-2">
         <app-stock-status-badge [status]="item.status" />
@@ -81,9 +77,7 @@
     </tr>
     }
   </app-data-table>
-  }
-
-  @if (totalElements() > 0) {
+  } @if (totalElements() > 0) {
   <div class="mt-auto">
     <app-pagination
       [page]="page()"
@@ -94,12 +88,7 @@
       (pageSizeChange)="onPageSizeChange($event)"
     />
   </div>
-  }
-  @if (movementTarget(); as target) {
-  <app-movement-dialog
-    [item]="target"
-    (saved)="onMovementSaved()"
-    (closed)="closeMovement()"
-  />
+  } @if (movementTarget(); as target) {
+  <app-movement-dialog [item]="target" (saved)="onMovementSaved()" (closed)="closeMovement()" />
   }
 </div>

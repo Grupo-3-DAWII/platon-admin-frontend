@@ -1,7 +1,9 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, forkJoin, of } from 'rxjs';
+import { catchError, forkJoin, map, of } from 'rxjs';
 
+import { Order } from '../../orders/models/order';
+import { OrdersService } from '../../orders/services/orders.service';
 import { LOW_STOCK_THRESHOLD } from '../../products/models/product';
 import { ProductsService } from '../../products/services/products.service';
 import {
@@ -9,18 +11,25 @@ import {
   ReportKpis,
   ReportPeriod,
   ReportStatusMetric,
+  ReportTone,
 } from '../models/report.model';
 
 const NO_COUNTS = { total: 0, critical: 0, out: 0 };
 
-@Injectable({
-  providedIn: 'root',
-})
+const round2 = (n: number) => Math.round(n * 100) / 100;
+const sumTotal = (orders: Order[]) => orders.reduce((sum, o) => sum + (o.total ?? 0), 0);
+
+const dateKey = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+@Injectable()
 export class ReportsService {
   private readonly products = inject(ProductsService);
+  private readonly ordersApi = inject(OrdersService);
 
   readonly period = signal<ReportPeriod>('30');
 
+  // --- Inventario  ---
   private readonly counts = toSignal(
     forkJoin({
       total: this.products.count(),
@@ -30,66 +39,125 @@ export class ReportsService {
     { initialValue: NO_COUNTS },
   );
 
-  readonly kpis = computed<ReportKpis>(() => ({
-    netSales: 0,
-    completedSales: 0,
-    averageTicket: 0,
-    criticalStock: this.counts().critical,
-  }));
-
   readonly inventoryStatus = computed<ReportStatusMetric[]>(() => {
     const { total, critical, out } = this.counts();
     const available = total - critical;
     const low = critical - out;
 
     return [
-      {
-        key: 'available',
-        label: 'Disponibles',
-        count: available,
-        percentage: this.percentage(available, total),
-        tone: 'success',
-      },
-      {
-        key: 'low',
-        label: 'Bajo stock',
-        count: low,
-        percentage: this.percentage(low, total),
-        tone: 'warning',
-      },
-      {
-        key: 'out',
-        label: 'Agotados',
-        count: out,
-        percentage: this.percentage(out, total),
-        tone: 'danger',
-      },
+      this.metric('available', 'Disponibles', available, total, 'success'),
+      this.metric('low', 'Bajo stock', low, total, 'warning'),
+      this.metric('out', 'Agotados', out, total, 'danger'),
     ];
   });
 
-  readonly salesStatus = signal<ReportStatusMetric[]>([
-    { key: 'delivered', label: 'Entregadas', count: 0, percentage: 0, tone: 'success' },
-    { key: 'pending', label: 'Pendientes', count: 0, percentage: 0, tone: 'warning' },
-    { key: 'cancelled', label: 'Canceladas', count: 0, percentage: 0, tone: 'danger' },
-  ]).asReadonly();
+  // --- Pedidos / pagos ---
+  private readonly ordersState = toSignal(
+    this.ordersApi.getAll().pipe(
+      map((orders) => ({ orders, error: false })),
+      catchError(() => of({ orders: [] as Order[], error: true })),
+    ),
+    { initialValue: null },
+  );
 
-  readonly paymentStatus = signal<ReportStatusMetric[]>([
-    { key: 'paid', label: 'Pagado', count: 0, percentage: 0, tone: 'success' },
-    { key: 'pending', label: 'Pendiente', count: 0, percentage: 0, tone: 'warning' },
-    { key: 'refunded', label: 'Reembolsado', count: 0, percentage: 0, tone: 'danger' },
-  ]).asReadonly();
+  readonly loading = computed(() => this.ordersState() === null);
+  readonly error = computed(() => this.ordersState()?.error ?? false);
 
-  readonly dailySummary = signal<DailyReportRow[]>([]).asReadonly();
+  private readonly periodOrders = computed(() => {
+    const orders = this.ordersState()?.orders ?? [];
+    const period = this.period();
+    if (period === 'all') return orders;
+
+    const since = new Date();
+    since.setDate(since.getDate() - (Number(period) - 1));
+    const sinceKey = dateKey(since);
+    return orders.filter((o) => o.createdAt.slice(0, 10) >= sinceKey);
+  });
+
+  private readonly paidOrders = computed(() =>
+    this.periodOrders().filter((o) => o.status === 'paid'),
+  );
+
+  readonly kpis = computed<ReportKpis>(() => {
+    const paid = this.paidOrders();
+    const netSales = round2(sumTotal(paid));
+    return {
+      netSales,
+      completedSales: paid.length,
+      averageTicket: paid.length ? round2(netSales / paid.length) : 0,
+      criticalStock: this.counts().critical,
+    };
+  });
+
+  // Por cantidad de pedidos
+  readonly salesStatus = computed<ReportStatusMetric[]>(() => {
+    const orders = this.periodOrders();
+    const count = (status: Order['status']) => orders.filter((o) => o.status === status).length;
+    const total = orders.length;
+    return [
+      this.metric('paid', 'Pagados', count('paid'), total, 'success'),
+      this.metric('pending', 'Pendientes', count('pending'), total, 'warning'),
+      this.metric('cancelled', 'Cancelados', count('cancelled'), total, 'danger'),
+    ];
+  });
+
+  // Por monto
+  readonly paymentStatus = computed<ReportStatusMetric[]>(() => {
+    const orders = this.periodOrders();
+    const amount = (status: Order['status']) => sumTotal(orders.filter((o) => o.status === status));
+    const paid = amount('paid');
+    const pending = amount('pending');
+    const cancelled = amount('cancelled');
+    const total = paid + pending + cancelled;
+    return [
+      this.metric('paid', 'Cobrado', paid, total, 'success'),
+      this.metric('pending', 'Por cobrar', pending, total, 'warning'),
+      this.metric('cancelled', 'Rechazado', cancelled, total, 'danger'),
+    ];
+  });
+
+  // Más reciente primero
+  readonly dailySummary = computed<DailyReportRow[]>(() => {
+    const days = new Map<string, DailyReportRow>();
+
+    for (const order of this.periodOrders()) {
+      const date = order.createdAt.slice(0, 10);
+      const row = days.get(date) ?? { date, sales: 0, revenue: 0, averageTicket: 0, cancelled: 0 };
+      if (order.status === 'paid') {
+        row.sales += 1;
+        row.revenue += order.total ?? 0;
+      } else if (order.status === 'cancelled') {
+        row.cancelled += 1;
+      }
+      days.set(date, row);
+    }
+
+    return [...days.values()]
+      .map((row) => ({
+        ...row,
+        revenue: round2(row.revenue),
+        averageTicket: row.sales ? round2(row.revenue / row.sales) : 0,
+      }))
+      .sort((a, b) => b.date.localeCompare(a.date));
+  });
 
   setPeriod(period: ReportPeriod): void {
     this.period.set(period);
   }
 
-  private percentage(value: number, total: number): number {
-    if (total === 0) {
-      return 0;
-    }
-
-    return Math.round((value / total) * 100);
+  private metric(
+    key: string,
+    label: string,
+    count: number,
+    total: number,
+    tone: ReportTone,
+  ): ReportStatusMetric {
+    return {
+      key,
+      label,
+      count,
+      percentage: total === 0 ? 0 : Math.round((count / total) * 100),
+      tone,
+    };
   }
 }

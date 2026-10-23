@@ -1,15 +1,13 @@
-<div
-  class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-  (click)="closed.emit()"
->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-black/40" aria-hidden="true" (click)="closed.emit()"></div>
+
   <form
     role="dialog"
     aria-modal="true"
     aria-labelledby="movement-title"
     [formGroup]="form"
     (ngSubmit)="save()"
-    (click)="$event.stopPropagation()"
-    class="card flex w-full max-w-[520px] flex-col gap-5 bg-white"
+    class="card relative flex w-full max-w-[520px] flex-col gap-5 bg-white"
   >
     <header class="flex flex-col gap-1">
       <h2 id="movement-title" class="card-title">Registrar movimiento</h2>

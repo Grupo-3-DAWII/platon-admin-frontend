@@ -1,26 +1,98 @@
-import { FilterOption } from '../../../shared/models/filter-option';
 import { OrderFilter, OrderStatus } from '../../../shared/models/order-status';
 
-export const ORDER_FILTERS: FilterOption<OrderFilter>[] = [
-  { value: 'all', label: 'Todos' },
-  { value: 'delivered', label: 'Entregado' },
-  { value: 'pending', label: 'Pendiente' },
-  { value: 'cancelled', label: 'Cancelado' },
-];
+// --- Backend ---
 
-export interface OrderItem {
+export interface OrderProductDto {
+  name: string;
+  isbn: string;
+  author: string;
+  imageUrl?: string | null;
+}
+
+export interface OrderItemDto {
+  idProducts: number;
+  numberSold: number;
+  product: OrderProductDto | null;
+  unitPrice: number | null;
+  subtotal: number | null;
+}
+
+export interface OrderDto {
+  idProductsSold: number;
+  idUser: number;
+  createDate: string;
+  stateSold: { idStateSold: number; nameState: string };
+  buyer: { name: string; lastname: string } | null;
+  products: OrderItemDto[];
+  totalAmount: number | null;
+}
+
+export interface OrdersPageDto {
+  content: OrderDto[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  message?: string | null;
+}
+
+// --- Modelo que usa la UI ---
+
+export interface OrderLine {
   productId: number;
   productName: string;
   quantity: number;
-  unitPrice: number;
+  unitPrice: number | null;
+  subtotal: number | null;
 }
 
-export interface OrderResponse {
+export interface Order {
   id: number;
-  code: string;
   customerName: string;
-  items: OrderItem[];
-  total: number;
+  items: OrderLine[];
+  total: number | null;
   status: OrderStatus;
   createdAt: string;
+}
+
+const STATUS_BY_STATE: Record<string, OrderStatus> = {
+  PENDIENTE: 'pending',
+  PAGADO: 'paid',
+  CANCELADO: 'cancelled',
+};
+
+export const STATE_BY_FILTER: Partial<Record<OrderFilter, string>> = {
+  pending: 'PENDIENTE',
+  paid: 'PAGADO',
+  cancelled: 'CANCELADO',
+};
+
+export const toOrder = (d: OrderDto): Order => ({
+  id: d.idProductsSold,
+  customerName: d.buyer ? `${d.buyer.name} ${d.buyer.lastname}`.trim() : 'Cliente desconocido',
+  items: (d.products ?? []).map((i) => ({
+    productId: i.idProducts,
+    productName: i.product?.name ?? `Producto #${i.idProducts}`,
+    quantity: i.numberSold,
+    unitPrice: i.unitPrice,
+    subtotal: i.subtotal,
+  })),
+  total: d.totalAmount,
+  status: STATUS_BY_STATE[d.stateSold.nameState.toUpperCase()] ?? 'unknown',
+  createdAt: d.createDate,
+});
+export interface OrderStateDto {
+  idStateSold: number;
+  nameState: string;
+}
+
+export interface PurchaseRequest {
+  idUser: number;
+  idStateSold: number;
+  products: { idProducts: number; numberSold: number }[];
+  totalAmount: number;
+}
+
+export interface PurchaseResponseDto {
+  idProductsSold: number;
 }

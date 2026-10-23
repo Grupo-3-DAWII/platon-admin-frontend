@@ -1,12 +1,12 @@
 import { FilterOption } from './filter-option';
 
-export type OrderStatus = 'delivered' | 'pending' | 'cancelled';
+export type OrderStatus = 'paid' | 'pending' | 'cancelled' | 'unknown';
 
-export type OrderFilter = 'all' | OrderStatus;
+export type OrderFilter = 'all' | Exclude<OrderStatus, 'unknown'>;
 
 export const ORDER_FILTERS: FilterOption<OrderFilter>[] = [
   { value: 'all', label: 'Todos' },
-  { value: 'delivered', label: 'Entregado' },
   { value: 'pending', label: 'Pendiente' },
+  { value: 'paid', label: 'Pagado' },
   { value: 'cancelled', label: 'Cancelado' },
 ];

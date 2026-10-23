@@ -3,9 +3,10 @@ import { OrderStatus } from '../../models/order-status';
 import { Badge, BadgeVariant } from '../badge/badge';
 
 const ORDER_STATUS_BADGE: Record<OrderStatus, { label: string; variant: BadgeVariant }> = {
-  delivered: { label: 'Entregado', variant: 'success' },
+  paid: { label: 'Pagado', variant: 'success' },
   pending: { label: 'Pendiente', variant: 'warning' },
   cancelled: { label: 'Cancelado', variant: 'danger' },
+  unknown: { label: 'Desconocido', variant: 'neutral' },
 };
 
 @Component({

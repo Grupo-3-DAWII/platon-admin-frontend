@@ -1,13 +1,12 @@
 <div class="flex min-h-full flex-col gap-[20px]">
   <app-page-header title="Pedidos">
-    <button
-      type="button"
+    <a
+      routerLink="/orders/new"
       class="flex gap-[15px] rounded-[30px] bg-brand px-[16px] py-[12px] text-white"
-      (click)="createOrder()"
     >
       <app-icon name="add" [size]="16"></app-icon>
       <span class="text-[14px] font-medium">Nuevo pedido</span>
-    </button>
+    </a>
   </app-page-header>
 
   <app-filters-bar
@@ -16,20 +15,26 @@
     [selectedFilter]="query.filter()"
     [totalCount]="totalCount()"
     (filterChange)="query.setFilter($event)"
-    (searchChange)="query.setSearch($event)"
-    (filterClick)="openFilterPanel()"
-    (sortClick)="openSortMenu()"
+    (searchChange)="onSearch($event)"
   />
 
+  @if (actionError(); as message) {
+  <p role="alert" class="text-sm font-medium text-danger">{{ message }}</p>
+  } @if (error()) {
+  <div class="py-10 text-center text-pc-grey">
+    <p>No se pudieron cargar los pedidos.</p>
+    <button type="button" class="mt-3 font-medium text-brand underline" (click)="retry()">
+      Reintentar
+    </button>
+  </div>
+  } @else if (loading()) {
+  <p class="py-10 text-center text-pc-grey">Cargando pedidos...</p>
+  } @else {
   <app-data-table [columns]="columns">
-    @for (order of pagedOrders(); track order.id) {
+    @for (order of orders(); track order.id) {
     <tr class="h-[56px] transition-colors hover:bg-table-row-hover">
-      <td class="border-b border-table-divider px-5 py-2 text-base font-medium text-ink">
-        {{ order.id }}
-      </td>
-
       <td class="border-b border-table-divider px-5 py-2 text-base font-semibold text-ink-muted">
-        {{ order.code }}
+        {{ order.id }}
       </td>
 
       <td class="border-b border-table-divider px-5 py-2 text-base text-ink">
@@ -51,38 +56,51 @@
       </td>
 
       <td class="border-b border-table-divider px-5 py-2 text-base text-ink">
-        {{ order.total | currency: 'PEN' : 'S/ ' }}
+        @if (order.total !== null) { {{ order.total | currency: 'PEN' : 'S/ ' }} } @else {
+        <span class="text-ink-soft">—</span>
+        }
       </td>
 
       <td class="border-b border-table-divider px-5 py-2">
         <app-order-status-badge [status]="order.status" />
       </td>
 
-      <td class="border-b border-table-divider px-5 py-2 text-center">
-        <button
-          type="button"
-          [attr.aria-label]="'Opciones del pedido ' + order.code"
-          class="inline-flex size-8 items-center justify-center rounded-full border border-border text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
-        >
-          <app-icon name="more" [size]="12" />
-        </button>
+      <td class="border-b border-table-divider px-5 py-2">
+        <div class="grid grid-cols-2 items-center gap-1 *:m-auto">
+          <a
+            [routerLink]="['/orders', order.id]"
+            [attr.aria-label]="'Ver detalle del pedido ' + order.id"
+            title="Ver detalle"
+            class="flex size-[32px] items-center justify-center rounded-full hover:bg-neutral-100"
+          >
+            <app-icon name="show" [size]="18"></app-icon>
+          </a>
+          @if (order.status === 'pending') {
+          <app-row-actions
+            [label]="'Opciones del pedido ' + order.id"
+            [actions]="rowActions"
+            (selected)="handleAction($event, order)"
+          />
+          }
+        </div>
       </td>
     </tr>
     } @empty {
     <tr>
-      <td colspan="8" class="py-10 text-center text-pc-grey">No hay pedidos para mostrar.</td>
+      <td colspan="7" class="py-10 text-center text-pc-grey">No hay pedidos para mostrar.</td>
     </tr>
     }
   </app-data-table>
-
+  } @if (totalCount() > 0) {
   <div class="mt-auto">
     <app-pagination
       [page]="query.page()"
       [pageSize]="query.pageSize()"
       [pageSizeOptions]="pageSizeOptions"
-      [totalItems]="filteredOrders().length"
+      [totalItems]="totalCount()"
       (pageChange)="query.setPage($event)"
       (pageSizeChange)="query.setPageSize($event)"
     />
   </div>
+  }
 </div>
