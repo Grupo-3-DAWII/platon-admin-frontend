@@ -15,6 +15,10 @@ export class FiltersBar<T extends string> {
   selectedFilter = input.required<T>();
   totalCount = input<number | null>(null);
   searchPlaceholder = input('Buscar...');
+  searchValue = input('');
+  clearableSearch = input(false);
+  sortLabel = input('Ordenar');
+  sortDescending = input<boolean | null>(null);
   tabsLabel = input('Filtrar por estado');
 
   additionalFilterCount = input(0);

@@ -1,0 +1,151 @@
+<form
+  [formGroup]="form"
+  (ngSubmit)="apply()"
+  aria-label="Filtros adicionales"
+  class="rounded-2xl border border-border bg-surface p-4 sm:p-5"
+>
+  <div class="mb-4 flex items-center justify-between gap-3">
+    <h2 class="font-semibold text-ink">Filtros adicionales</h2>
+    <button
+      type="button"
+      aria-label="Cerrar filtros"
+      (click)="dismiss.emit()"
+      class="flex size-9 items-center justify-center rounded-full text-xl hover:bg-surface-muted"
+    >
+      ×
+    </button>
+  </div>
+  <div class="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    @if(kind() !== 'orders'){
+    <label class="flex min-w-0 flex-col gap-2 text-sm"
+      >Género<select
+        formControlName="genre"
+        class="min-w-0 rounded-xl border border-control-border bg-white p-3"
+      >
+        <option value="">Todos los géneros</option>
+        @for(genre of genres();track genre){
+        <option [value]="genre">{{genre}}</option>
+        }
+      </select></label
+    >
+    @if(kind() === 'products'){<label class="flex min-w-0 flex-col gap-2 text-sm"
+      >Editorial<select
+        formControlName="editorial"
+        class="min-w-0 rounded-xl border border-control-border bg-white p-3"
+      >
+        <option value="">Todas las editoriales</option>
+        @for(editorial of editorials();track editorial){
+        <option [value]="editorial">{{editorial}}</option>
+        }
+      </select></label
+    >}
+    <label class="flex min-w-0 flex-col gap-2 text-sm"
+      >Estado del producto<select
+        formControlName="active"
+        class="min-w-0 rounded-xl border border-control-border bg-white p-3"
+      >
+        <option value="all">Activos e inactivos</option>
+        <option value="active">Activos</option>
+        <option value="inactive">Inactivos</option>
+      </select></label
+    >
+    }
+    <label class="flex min-w-0 flex-col gap-2 text-sm"
+      >{{kind()==='inventory' ? 'Stock mínimo' : kind()==='products' ? 'Precio mínimo (S/)' :
+      'Importe mínimo (S/)'}}<input
+        type="text"
+        [attr.inputmode]="kind()==='inventory'?'numeric':'decimal'"
+        formControlName="min"
+        maxlength="14"
+        placeholder="Sin mínimo"
+        class="w-full min-w-0 rounded-xl border border-control-border bg-white p-3"
+    /></label>
+    <label class="flex min-w-0 flex-col gap-2 text-sm"
+      >{{kind()==='inventory' ? 'Stock máximo' : kind()==='products' ? 'Precio máximo (S/)' :
+      'Importe máximo (S/)'}}<input
+        type="text"
+        [attr.inputmode]="kind()==='inventory'?'numeric':'decimal'"
+        formControlName="max"
+        maxlength="14"
+        placeholder="Sin máximo"
+        class="w-full min-w-0 rounded-xl border border-control-border bg-white p-3"
+    /></label>
+    @if(kind() !== 'products'){
+    <label class="flex min-w-0 flex-col gap-2 text-sm"
+      >{{kind()==='inventory'?'Último movimiento desde':'Pedido desde'}}<input
+        type="date"
+        formControlName="from"
+        [max]="form.controls.to.value || '9999-12-31'"
+        class="w-full min-w-0 rounded-xl border border-control-border bg-white p-3"
+    /></label>
+    <label class="flex min-w-0 flex-col gap-2 text-sm"
+      >{{kind()==='inventory'?'Último movimiento hasta':'Pedido hasta'}}<input
+        type="date"
+        formControlName="to"
+        [min]="form.controls.from.value"
+        class="w-full min-w-0 rounded-xl border border-control-border bg-white p-3"
+    /></label>
+    } @if(kind()==='inventory'){<label class="flex min-w-0 flex-col gap-2 text-sm"
+      >Último movimiento<select
+        formControlName="movement"
+        class="min-w-0 rounded-xl border border-control-border bg-white p-3"
+      >
+        <option value="all">Todos</option>
+        <option value="entry">Entrada</option>
+        <option value="exit">Salida</option>
+        <option value="none">Sin movimientos</option>
+      </select></label
+    >} @if(kind()==='orders'){<label class="flex min-w-0 flex-col gap-2 text-sm"
+      >Método de pago<select
+        formControlName="payment"
+        class="min-w-0 rounded-xl border border-control-border bg-white p-3"
+      >
+        <option value="all">Todos</option>
+        <option value="card">Tarjeta · Visa</option>
+        <option value="unrecorded">Sin método registrado</option>
+      </select></label
+    >}
+    <label class="flex min-w-0 flex-col gap-2 text-sm"
+      >Ordenar por<select
+        formControlName="sortBy"
+        class="min-w-0 rounded-xl border border-control-border bg-white p-3"
+      >
+        <option value="name">{{kind()==='orders'?'Cliente':'Nombre'}}</option>
+        <option value="id">{{kind()==='orders'?'Número de pedido':'Código'}}</option>
+        @if(kind()==='products'){
+        <option value="price">Precio</option>
+        <option value="stock">Stock</option>
+        }@if(kind()==='inventory'){
+        <option value="stock">Stock</option>
+        <option value="date">Último movimiento</option>
+        }@if(kind()==='orders'){
+        <option value="date">Fecha del pedido</option>
+        <option value="total">Importe</option>
+        }
+      </select></label
+    >
+  </div>
+  @if(invalidRange){
+  <p role="alert" class="mt-3 text-sm text-danger">
+    Revisa los rangos. Usa valores positivos, fechas válidas y un mínimo menor o igual al máximo.
+  </p>
+  }
+  <p class="mt-3 text-xs text-ink-muted">
+    Se combina con el estado y la búsqueda. Las fechas incluyen ambos días.
+  </p>
+  <div class="mt-4 flex flex-wrap justify-end gap-3">
+    <button
+      type="button"
+      (click)="reset()"
+      class="rounded-full border border-border px-5 py-2.5 text-sm"
+    >
+      Restablecer</button
+    ><button
+      type="submit"
+      [disabled]="invalidRange"
+      class="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+    >
+      Aplicar filtros
+    </button>
+  </div>
+</form>

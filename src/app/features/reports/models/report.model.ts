@@ -5,7 +5,7 @@ export type ReportTone = 'success' | 'warning' | 'danger' | 'info';
 export interface ReportKpis {
   netSales: number;
   completedSales: number;
-  averageTicket: number;
+  averageTicket: number | null;
   criticalStock: number;
 }
 
@@ -20,7 +20,7 @@ export interface ReportStatusMetric {
 export interface DailyReportRow {
   date: string;
   sales: number;
-  revenue: number;
-  averageTicket: number;
+  revenue: number | null;
+  averageTicket: number | null;
   cancelled: number;
 }

@@ -2,7 +2,15 @@
   <app-page-header title="Inventario"> </app-page-header>
 
   <app-filters-bar
-    searchPlaceholder="Buscar productos"
+    searchPlaceholder="Nombre, autor, ISBN o código"
+    [searchValue]="search()"
+    [clearableSearch]="true"
+    [additionalFilterCount]="list.activeCount()"
+    [filterExpanded]="list.panelOpen()"
+    [sortLabel]="list.sortLabel()"
+    [sortDescending]="list.descending()"
+    (filterClick)="list.panelOpen.set(!list.panelOpen())"
+    (sortClick)="list.toggleSort()"
     [filters]="filters"
     [selectedFilter]="selectedFilter()"
     [totalCount]="totalElements()"
@@ -10,6 +18,17 @@
     (searchChange)="onSearch($event)"
   />
 
+  @if(list.panelOpen()){<app-collection-filters
+    kind="inventory"
+    [value]="list.advanced()"
+    [genres]="list.genres()"
+    [editorials]="list.editorials()"
+    (applyFilters)="list.apply($event)"
+    (dismiss)="list.panelOpen.set(false)"
+  />}
+  @if (list.activeCount()) {
+    <button type="button" (click)="list.clear()" class="self-start text-sm font-medium text-brand underline underline-offset-4">Limpiar filtros adicionales</button>
+  }
   @if (error()) {
   <div class="py-10 text-center text-pc-grey">
     <p>No se pudo cargar el inventario.</p>

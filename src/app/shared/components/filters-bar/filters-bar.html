@@ -21,8 +21,11 @@
   </div>
 
   <div class="flex w-full min-w-0 items-center gap-2 xl:w-auto xl:gap-[12px]">
-    <app-search-input class="min-w-0 flex-1 xl:w-[260px] xl:flex-none"
+    <app-search-input
+      class="min-w-0 flex-1 xl:w-[260px] xl:flex-none"
       [placeholder]="searchPlaceholder()"
+      [value]="searchValue()"
+      [clearable]="clearableSearch()"
       (valueChange)="searchChange.emit($event)"
     />
 
@@ -34,12 +37,20 @@
       (click)="filterClick.emit()"
     >
       <app-icon name="filter" [size]="10"></app-icon>
-      @if (additionalFilterCount()) { <span aria-hidden="true" class="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-brand text-xs font-semibold text-white">{{ additionalFilterCount() }}</span> }
+      @if (additionalFilterCount()) {
+      <span
+        aria-hidden="true"
+        class="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-brand text-xs font-semibold text-white"
+        >{{ additionalFilterCount() }}</span
+      >
+      }
     </button>
 
     <button
       type="button"
-      aria-label="Ordenar"
+      [attr.aria-label]="sortLabel()"
+      [title]="sortLabel()"
+      [attr.aria-pressed]="sortDescending()"
       class="size-[40px] shrink-0 rounded-full border border-pc-border"
       (click)="sortClick.emit()"
     >

@@ -1,3 +1,4 @@
+import { FulfillmentStatus } from '../models/order-progress';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { EMPTY, expand, map, Observable, reduce } from 'rxjs';
@@ -46,6 +47,13 @@ export class OrdersService {
     return this.http
       .get<OrderDto>(`${environment.apiUrl}${API_ROUTES.payments.orderById(id)}`)
       .pipe(map(toOrder));
+  }
+  updateOrderStatus(id: number, orderStatus: FulfillmentStatus): Observable<void> {
+    return this.http
+      .patch(`${environment.apiUrl}${API_ROUTES.payments.orderById(id)}/order-status`, {
+        orderStatus,
+      })
+      .pipe(map(() => undefined));
   }
   acceptPayment(id: number, amount: number): Observable<void> {
     return this.http

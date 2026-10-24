@@ -1,4 +1,15 @@
-import { afterRenderEffect, ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, output, viewChild } from '@angular/core';
+import { APP_DESTINATIONS } from '../../../../core/navigation/app-navigation';
+import {
+  afterRenderEffect,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  input,
+  output,
+  viewChild,
+} from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 import { canVisitStaffPage } from '../../../../core/auth/staff.guard';
@@ -34,62 +45,33 @@ export class Sidebar {
 
   trapFocus(event: KeyboardEvent): void {
     if (!this.isMobile() || !this.mobileOpen() || event.key !== 'Tab') return;
-    const buttons = Array.from(this.sidebar()!.nativeElement.querySelectorAll<HTMLElement>('a[href], button:not([disabled])'));
+    const buttons = Array.from(
+      this.sidebar()!.nativeElement.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled])',
+      ),
+    );
     const first = buttons[0];
     const last = buttons.at(-1);
     const active = this.sidebar()!.nativeElement.ownerDocument.activeElement;
-    if (event.shiftKey && active === first) { event.preventDefault(); last?.focus(); }
-    else if (!event.shiftKey && active === last) { event.preventDefault(); first?.focus(); }
+    if (event.shiftKey && active === first) {
+      event.preventDefault();
+      last?.focus();
+    } else if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first?.focus();
+    }
   }
 
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
-  readonly visibleItems = computed(() => this.mainItems.filter((item) =>
-    canVisitStaffPage(this.authService.session()?.user.role ?? '', item.route)));
+  readonly visibleItems = computed(() =>
+    this.mainItems.filter((item) =>
+      canVisitStaffPage(this.authService.session()?.user.role ?? '', item.route),
+    ),
+  );
 
-  readonly mainItems: SidebarItem[] = [
-    {
-      label: 'Dashboard',
-      route: '/dashboard',
-      icon: 'dashboard',
-    },
-    {
-      label: 'Productos',
-      route: '/products',
-      icon: 'products',
-    },
-    {
-      label: 'Inventario',
-      route: '/inventory',
-      icon: 'inventory',
-    },
-    {
-      label: 'Pedidos',
-      route: '/orders',
-      icon: 'orders',
-    },
-    {
-      label: 'Ventas',
-      route: '/sales',
-      icon: 'sales',
-    },
-    {
-      label: 'Clientes',
-      route: '/customers',
-      icon: 'customers',
-    },
-    {
-      label: 'Reportes',
-      route: '/reports',
-      icon: 'reports',
-    },
-    {
-      label: 'Usuarios',
-      route: '/users',
-      icon: 'users',
-    },
-  ];
+  readonly mainItems: SidebarItem[] = APP_DESTINATIONS.slice(0, 8);
 
   readonly secondaryItems: SidebarItem[] = [
     {
@@ -99,8 +81,12 @@ export class Sidebar {
     },
   ];
 
-  logout(): void { this.logoutDialog()?.nativeElement.showModal(); }
-  cancelLogout(): void { this.logoutDialog()?.nativeElement.close(); }
+  logout(): void {
+    this.logoutDialog()?.nativeElement.showModal();
+  }
+  cancelLogout(): void {
+    this.logoutDialog()?.nativeElement.close();
+  }
   confirmLogout(): void {
     this.logoutDialog()?.nativeElement.close();
     this.authService.logout();

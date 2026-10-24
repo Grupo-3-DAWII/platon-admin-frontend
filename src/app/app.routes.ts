@@ -34,6 +34,10 @@ export const routes: Routes = [
       },
 
       {
+        path: 'profile',
+        loadComponent: () => import('./features/profile/profile-page').then((m) => m.ProfilePage),
+      },
+      {
         path: 'dashboard',
         canActivate: [adminGuard],
         loadComponent: () => import('./features/dashboard/dashboard').then((m) => m.Dashboard),

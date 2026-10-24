@@ -1,3 +1,4 @@
+import { allPages } from '../../../shared/utils/all-pages';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
@@ -26,6 +27,10 @@ export interface InventoryQuery {
 export class InventoryService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}${API_ROUTES.products.base}`;
+
+  getAll(): Observable<InventoryItem[]> {
+    return allPages(page => this.getPage({page, size:100}));
+  }
 
   getPage({ page = 0, size = 10, search, maxStock }: InventoryQuery = {}): Observable<
     PageDto<InventoryItem>
