@@ -78,13 +78,16 @@ export class ReportsService {
     this.periodOrders().filter((o) => o.status === 'paid'),
   );
 
+  readonly missingAmountCount = computed(() => this.periodOrders().filter((order) => order.total === null).length);
+
   readonly kpis = computed<ReportKpis>(() => {
     const paid = this.paidOrders();
-    const netSales = round2(sumTotal(paid));
+    const priced = paid.filter((order) => order.total !== null);
+    const netSales = round2(sumTotal(priced));
     return {
       netSales,
       completedSales: paid.length,
-      averageTicket: paid.length ? round2(netSales / paid.length) : 0,
+      averageTicket: priced.length ? round2(netSales / priced.length) : paid.length ? null : 0,
       criticalStock: this.counts().critical,
     };
   });
@@ -118,14 +121,17 @@ export class ReportsService {
 
   // Más reciente primero
   readonly dailySummary = computed<DailyReportRow[]>(() => {
-    const days = new Map<string, DailyReportRow>();
+    const days = new Map<string, { date: string; sales: number; revenue: number; cancelled: number; pricedSales: number }>();
 
     for (const order of this.periodOrders()) {
       const date = order.createdAt.slice(0, 10);
-      const row = days.get(date) ?? { date, sales: 0, revenue: 0, averageTicket: 0, cancelled: 0 };
+      const row = days.get(date) ?? { date, sales: 0, revenue: 0, pricedSales: 0, cancelled: 0 };
       if (order.status === 'paid') {
         row.sales += 1;
-        row.revenue += order.total ?? 0;
+        if (order.total !== null) {
+          row.revenue += order.total;
+          row.pricedSales += 1;
+        }
       } else if (order.status === 'cancelled') {
         row.cancelled += 1;
       }
@@ -133,10 +139,10 @@ export class ReportsService {
     }
 
     return [...days.values()]
-      .map((row) => ({
+      .map(({ pricedSales, ...row }) => ({
         ...row,
-        revenue: round2(row.revenue),
-        averageTicket: row.sales ? round2(row.revenue / row.sales) : 0,
+        revenue: row.sales && !pricedSales ? null : round2(row.revenue),
+        averageTicket: pricedSales ? round2(row.revenue / pricedSales) : row.sales ? null : 0,
       }))
       .sort((a, b) => b.date.localeCompare(a.date));
   });

@@ -24,6 +24,7 @@ export interface StockMovementRequest {
 }
 
 export interface InventoryItemDto {
+  isbn?: string;
   idProduct: number;
   name: string;
   author: string;
@@ -47,6 +48,7 @@ export interface InventoryMovement {
 }
 
 export interface InventoryItem {
+  isbn?: string;
   id: number;
   name: string;
   author: string;
@@ -70,6 +72,7 @@ export const toInventoryMovement = (d: StockMovementDto): InventoryMovement => (
 });
 
 export const toInventoryItem = (d: InventoryItemDto): InventoryItem => ({
+  isbn: d.isbn,
   id: d.idProduct,
   name: d.name,
   author: d.author,

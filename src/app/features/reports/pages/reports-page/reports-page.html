@@ -44,6 +44,10 @@
   <p class="text-sm text-pc-grey">Cargando reportes...</p>
   } @let kpis = reports.kpis();
 
+  @if (!reports.loading() && !reports.error() && reports.missingAmountCount()) {
+    <p role="status" class="text-sm text-ink-muted">Hay {{ reports.missingAmountCount() }} pedidos sin importe registrado. Los totales y promedios solo incluyen importes conocidos.</p>
+  }
+
   <!-- KPI -->
   <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
     <article class="min-w-0 rounded-card border border-border bg-surface p-4 sm:p-5">
@@ -98,7 +102,7 @@
           <p class="text-sm font-medium text-ink-muted">Ticket promedio</p>
 
           <p class="mt-1 text-[24px] font-semibold tracking-tight text-ink">
-            {{ kpis.averageTicket | currency: 'PEN': 'S/ ' }}
+            {{ kpis.averageTicket === null ? '—' : (kpis.averageTicket | currency: 'PEN' : 'S/ ') }}
           </p>
         </div>
       </div>
@@ -342,11 +346,11 @@
           </div>
           <div>
             <dt class="text-ink-muted">Ingresos</dt>
-            <dd class="break-words font-medium">{{ row.revenue | currency:'PEN':'S/ ' }}</dd>
+            <dd class="break-words font-medium">{{ row.revenue === null ? '—' : (row.revenue | currency: 'PEN' : 'S/ ') }}</dd>
           </div>
           <div>
             <dt class="text-ink-muted">Ticket promedio</dt>
-            <dd class="break-words">{{ row.averageTicket | currency:'PEN':'S/ ' }}</dd>
+            <dd class="break-words">{{ row.averageTicket === null ? '—' : (row.averageTicket | currency: 'PEN' : 'S/ ') }}</dd>
           </div>
         </dl>
       </article>
@@ -367,11 +371,11 @@
           <td class="border-b border-table-divider px-5 py-2 text-sm text-ink">{{ row.sales }}</td>
 
           <td class="border-b border-table-divider px-5 py-2 text-sm font-medium text-ink">
-            {{ row.revenue | currency: 'PEN': 'S/ ' }}
+            {{ row.revenue === null ? '—' : (row.revenue | currency: 'PEN' : 'S/ ') }}
           </td>
 
           <td class="border-b border-table-divider px-5 py-2 text-sm text-ink">
-            {{ row.averageTicket | currency: 'PEN': 'S/ ' }}
+            {{ row.averageTicket === null ? '—' : (row.averageTicket | currency: 'PEN' : 'S/ ') }}
           </td>
 
           <td class="border-b border-table-divider px-5 py-2 text-sm text-ink-muted">

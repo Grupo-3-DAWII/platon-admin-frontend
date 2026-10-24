@@ -1,5 +1,5 @@
 import { RouterLink } from '@angular/router';
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import {
   ApexAxisChartSeries,
   ApexChart,
@@ -14,11 +14,12 @@ import {
   ApexYAxis,
   NgApexchartsModule,
 } from 'ng-apexcharts';
-import { Badge } from '../../shared/components/badge/badge';
 import { DataTable, TableColumn } from '../../shared/components/data-table/data-table';
 import { Icon } from '../../shared/components/icon/icon';
 
-type WeekPeriod = 'current' | 'previous';
+import { DashboardService, WeekPeriod } from './dashboard.service';
+import { CurrencyPipe, DatePipe } from '@angular/common';
+import { OrderProgress } from '../orders/components/order-progress/order-progress';
 
 interface ChartOptions {
   series: ApexAxisChartSeries;
@@ -53,14 +54,29 @@ function getCssVariable(name: string): string {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, Icon, Badge, DataTable, NgApexchartsModule],
+  imports: [RouterLink, Icon, OrderProgress, DataTable, NgApexchartsModule, CurrencyPipe, DatePipe],
+  providers: [DashboardService],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Dashboard {
-  readonly salesTotalLabel = 'S/ 25,403';
-  readonly selectedWeek = signal<WeekPeriod>('current');
+  readonly data = inject(DashboardService);
+  readonly selectedWeek = this.data.selectedWeek;
+  readonly salesTotalLabel = computed(
+    () =>
+      `S/ ${this.data.salesTotal().toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+  );
+  readonly categorySeries = computed<ApexAxisChartSeries>(() => [
+    {
+      name: 'Unidades vendidas',
+      data: this.data.categories().map((category) => category.quantity),
+    },
+  ]);
+  readonly categoryXAxis = computed<ApexXAxis>(() => ({
+    ...this.categoryChartOptions.xaxis,
+    categories: this.data.categories().map((category) => category.name),
+  }));
 
   readonly recentOrdersColumns: TableColumn[] = [
     {
@@ -90,15 +106,8 @@ export class Dashboard {
     },
   ];
 
-  private readonly currentWeekData = [10000, 19000, 13000, 26000, 27000, 15000, 22000];
-
-  private readonly previousWeekData = [8000, 15000, 11000, 21000, 23000, 17000, 19000];
-
   readonly chartSeries = computed<ApexAxisChartSeries>(() => [
-    {
-      name: 'Ventas',
-      data: this.selectedWeek() === 'current' ? this.currentWeekData : this.previousWeekData,
-    },
+    { name: 'Ventas pagadas', data: this.data.weeklySales() },
   ]);
 
   readonly chartOptions: Omit<ChartOptions, 'series'> = {
@@ -172,10 +181,10 @@ export class Dashboard {
 
     yaxis: {
       min: 0,
-      max: 50000,
       tickAmount: 5,
       labels: {
-        formatter: (value: number) => `${value / 1000}k`,
+        formatter: (value: number) =>
+          `S/ ${value.toLocaleString('es-PE', { notation: 'compact' })}`,
         style: {
           colors: [getCssVariable('--color-ink-soft')],
           fontSize: '11px',
@@ -216,7 +225,7 @@ export class Dashboard {
     series: [
       {
         name: 'Ventas',
-        data: [42, 31, 24, 18, 12],
+        data: [],
       },
     ],
 
@@ -272,13 +281,12 @@ export class Dashboard {
         fontWeight: 500,
         colors: [getCssVariable('--color-ink-muted')],
       },
-      formatter: (value: number) => `${value}%`,
+      formatter: (value: number) => `${value}`,
     },
 
     xaxis: {
-      categories: ['Literatura', 'Infantil', 'Académicos', 'Historia', 'Ciencia ficción'],
+      categories: [],
       min: 0,
-      max: 50,
       tickAmount: 5,
       axisBorder: {
         show: false,
@@ -287,7 +295,7 @@ export class Dashboard {
         show: false,
       },
       labels: {
-        formatter: (value: string) => `${value}%`,
+        formatter: (value: string) => `${value}`,
         style: {
           colors: getCssVariable('--color-ink-soft'),
           fontSize: '10px',
@@ -333,7 +341,7 @@ export class Dashboard {
     tooltip: {
       theme: 'light',
       y: {
-        formatter: (value: number) => `${value}% de las ventas`,
+        formatter: (value: number) => `${value} unidades vendidas`,
       },
     },
   };

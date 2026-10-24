@@ -10,13 +10,32 @@
   </app-page-header>
 
   <app-filters-bar
-    searchPlaceholder="Buscar productos"
+    searchPlaceholder="Nombre, autor, ISBN o código"
+    [searchValue]="search()"
+    [clearableSearch]="true"
+    [additionalFilterCount]="list.activeCount()"
+    [filterExpanded]="list.panelOpen()"
+    [sortLabel]="list.sortLabel()"
+    [sortDescending]="list.descending()"
+    (filterClick)="list.panelOpen.set(!list.panelOpen())"
+    (sortClick)="list.toggleSort()"
     [filters]="filters"
     [selectedFilter]="selectedFilter()"
     [totalCount]="totalElements()"
     (filterChange)="onFilterChange($event)"
     (searchChange)="onSearch($event)"
   />
+  @if(list.panelOpen()){<app-collection-filters
+    kind="products"
+    [value]="list.advanced()"
+    [genres]="list.genres()"
+    [editorials]="list.editorials()"
+    (applyFilters)="list.apply($event)"
+    (dismiss)="list.panelOpen.set(false)"
+  />}
+  @if (list.activeCount()) {
+    <button type="button" (click)="list.clear()" class="self-start text-sm font-medium text-brand underline underline-offset-4">Limpiar filtros adicionales</button>
+  }
   @if (error()) {
   <div class="py-10 text-center text-pc-grey">
     <p>No se pudieron cargar los productos.</p>
@@ -27,11 +46,11 @@
   } @else if (loading()) {
   <p class="py-10 text-center text-pc-grey">Cargando productos...</p>
   } @else {
-  <div class="grid grid-cols-4 gap-[24px]">
+  <div class="grid grid-cols-1 gap-[24px] sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
     @for (book of filteredProducts(); track book.id) {
     <app-product-card [book]="book" />
     } @empty {
-    <p class="col-span-4 py-10 text-center text-pc-grey">No hay productos para mostrar.</p>
+    <p class="col-span-full py-10 text-center text-pc-grey">No hay productos para mostrar.</p>
     }
   </div>
   } @if (totalElements() > 0) {

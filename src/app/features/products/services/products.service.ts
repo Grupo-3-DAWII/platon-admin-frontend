@@ -1,3 +1,4 @@
+import { allPages } from '../../../shared/utils/all-pages';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
@@ -26,6 +27,10 @@ export interface ProductsQuery {
 export class ProductsService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}${API_ROUTES.products.base}`;
+
+  getAll(): Observable<ProductSummary[]> {
+    return allPages(page => this.getPage({page, size:100}));
+  }
 
   getPage({ page = 0, size = 20, search , maxStock}: ProductsQuery = {}): Observable<
     PageDto<ProductSummary>

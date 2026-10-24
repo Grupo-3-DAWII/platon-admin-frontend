@@ -30,7 +30,9 @@ El administrador tiene acceso a todo el panel. El vendedor puede entrar a Produc
 
 Ambas listas tienen buscador y filtros por estado. También se puede filtrar por rol en Usuarios, por compras pagadas en Clientes y por fecha de registro en los dos módulos.
 
-Dashboard y Reportes siguen usando datos de ejemplo. Dashboard, Clientes, Usuarios, Reportes y Ayuda ya se adaptan a pantallas pequeñas.
+Dashboard consulta pedidos, clientes y productos reales. Sus ventas incluyen solo pedidos pagados con importe registrado; el informe semanal va de lunes a domingo y las categorías muestran unidades vendidas. Reportes consulta Productos y Payments. Dashboard, Clientes, Usuarios, Reportes y Ayuda ya se adaptan a pantallas pequeñas.
+
+Ventas muestra pagos aceptados, permite buscar por cliente o número de venta, filtrar por fecha del pedido y abrir su detalle. El filtrado se realiza en el panel después de consultar todas las páginas; no se cambió Payments.
 
 ## Para revisar los cambios
 
@@ -40,4 +42,6 @@ npm test -- --watch=false
 npm run lint
 ```
 
-El lint general todavía marca funciones vacías en algunos módulos en desarrollo.
+Los pedidos de la tienda se pagan con una tarjeta de prueba. El panel muestra Tarjeta · Visa y el estado pagado; ya no pide confirmarlo manualmente. La campana avisa de nuevos pedidos y pagos, y Dashboard, Pedidos y Ventas se actualizan cada 8 segundos mientras están abiertos.
+
+El estado del pedido se cambia desde la misma fila: Pendiente, En camino o Entregado. El perfil permite editar teléfono y dirección. La búsqueda del encabezado sirve para abrir secciones o un pedido por su número.

@@ -260,8 +260,8 @@ export class ReportsPage {
     const content = rows.map((row) => [
       row.date,
       row.sales,
-      row.revenue.toFixed(2),
-      row.averageTicket.toFixed(2),
+      row.revenue?.toFixed(2) ?? '',
+      row.averageTicket?.toFixed(2) ?? '',
       row.cancelled,
     ]);
 

@@ -10,7 +10,15 @@
   </app-page-header>
 
   <app-filters-bar
-    searchPlaceholder="Buscar pedidos"
+    searchPlaceholder="Cliente, N.º de pedido, libro o ISBN"
+    [searchValue]="query.search()"
+    [clearableSearch]="true"
+    [additionalFilterCount]="activeFilterCount()"
+    [filterExpanded]="filterPanelOpen()"
+    [sortLabel]="sortLabel()"
+    [sortDescending]="descending()"
+    (filterClick)="filterPanelOpen.set(!filterPanelOpen())"
+    (sortClick)="toggleSort()"
     [filters]="filters"
     [selectedFilter]="query.filter()"
     [totalCount]="totalCount()"
@@ -18,7 +26,20 @@
     (searchChange)="onSearch($event)"
   />
 
-  @if (actionError(); as message) {
+  @if(filterPanelOpen()){<app-collection-filters
+    kind="orders"
+    [value]="advancedFilters()"
+    (applyFilters)="applyAdvancedFilters($event)"
+    (dismiss)="filterPanelOpen.set(false)"
+  />} @if (activeFilterCount()) {
+  <button
+    type="button"
+    (click)="clearAdvancedFilters()"
+    class="self-start text-sm font-medium text-brand underline underline-offset-4"
+  >
+    Limpiar filtros adicionales
+  </button>
+  } @if (actionError(); as message) {
   <p role="alert" class="text-sm font-medium text-danger">{{ message }}</p>
   } @if (error()) {
   <div class="py-10 text-center text-pc-grey">
@@ -30,7 +51,61 @@
   } @else if (loading()) {
   <p class="py-10 text-center text-pc-grey">Cargando pedidos...</p>
   } @else {
-  <app-data-table [columns]="columns">
+  <div class="grid gap-3 sm:grid-cols-2 md:hidden">
+    @for (order of orders(); track order.id) {
+    <article class="min-w-0 rounded-2xl border border-border bg-surface p-4">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <h2 class="font-semibold text-ink">Pedido #{{ order.id }}</h2>
+          <p class="mt-1 break-words text-sm text-ink-muted">{{ order.customerName }}</p>
+        </div>
+        <app-row-actions
+          class="shrink-0"
+          [label]="'Opciones del pedido ' + order.id"
+          [actions]="actionsFor(order)"
+          (selected)="handleAction($event, order)"
+        />
+      </div>
+      <div class="mt-3">
+        @if(order.status === 'paid') { <app-order-status-badge status="paid" /> } @else {
+        <span class="text-sm text-ink-muted">Sin pago</span> }@if(order.paymentMethod ===
+        'VISA_PLATINUM_SIMULATED'){
+        <p class="mt-1 text-xs text-ink-muted">Tarjeta · Visa</p>
+        }
+      </div>
+      <div class="mt-3">
+        <app-order-progress
+          [order]="order"
+          [disabled]="busy()"
+          (changed)="updateProgress(order, $event)"
+        />
+      </div>
+      @if (order.items[0]; as first) {
+      <p class="mt-3 break-words text-sm text-ink">
+        {{ first.productName }} @if (order.items.length > 1) {
+        <span class="text-ink-muted">(+{{ order.items.length - 1 }} más)</span> }
+      </p>
+      }
+      <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
+        <div>
+          <dt class="text-xs text-ink-muted">Fecha del pedido</dt>
+          <dd>{{ order.createdAt | date:'dd/MM/yyyy' }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-ink-muted">Total</dt>
+          <dd class="break-words font-medium">
+            {{ order.total === null ? '—' : (order.total | currency:'PEN':'S/ ':'1.2-2') }}
+          </dd>
+        </div>
+      </dl>
+    </article>
+    } @empty {
+    <p class="py-10 text-center text-sm text-ink-muted sm:col-span-2">
+      No hay pedidos para mostrar.
+    </p>
+    }
+  </div>
+  <app-data-table class="hidden min-w-0 md:block [&_table]:min-w-[1050px]" [columns]="columns">
     @for (order of orders(); track order.id) {
     <tr class="h-[56px] transition-colors hover:bg-table-row-hover">
       <td class="border-b border-table-divider px-5 py-2 text-base font-semibold text-ink-muted">
@@ -51,50 +126,49 @@
         }
       </td>
 
-      <td class="border-b border-table-divider px-5 py-2 text-base text-ink">
+      <td class="border-b border-table-divider px-5 py-2 text-base whitespace-nowrap text-ink">
         {{ order.createdAt | date: 'dd-MM-yyyy' }}
       </td>
 
-      <td class="border-b border-table-divider px-5 py-2 text-base text-ink">
+      <td class="border-b border-table-divider px-5 py-2 text-base whitespace-nowrap text-ink">
         @if (order.total !== null) { {{ order.total | currency: 'PEN' : 'S/ ' }} } @else {
         <span class="text-ink-soft">—</span>
         }
       </td>
 
       <td class="border-b border-table-divider px-5 py-2">
-        <app-order-status-badge [status]="order.status" />
+        @if(order.status === 'paid') { <app-order-status-badge status="paid" /> } @else {
+        <span class="text-sm text-ink-muted">Sin pago</span> }@if(order.paymentMethod ===
+        'VISA_PLATINUM_SIMULATED'){
+        <p class="mt-1 text-xs text-ink-muted">Tarjeta · Visa</p>
+        }
       </td>
 
       <td class="border-b border-table-divider px-5 py-2">
-        <div class="grid grid-cols-2 items-center gap-1 *:m-auto">
-          <a
-            [routerLink]="['/orders', order.id]"
-            [attr.aria-label]="'Ver detalle del pedido ' + order.id"
-            title="Ver detalle"
-            class="flex size-[32px] items-center justify-center rounded-full hover:bg-neutral-100"
-          >
-            <app-icon name="show" [size]="18"></app-icon>
-          </a>
-          @if (order.status === 'pending') {
-          <app-row-actions
-            [label]="'Opciones del pedido ' + order.id"
-            [actions]="rowActions"
-            (selected)="handleAction($event, order)"
-          />
-          }
-        </div>
+        <app-order-progress
+          [order]="order"
+          [disabled]="busy()"
+          (changed)="updateProgress(order, $event)"
+        />
+      </td>
+      <td class="border-b border-table-divider px-5 py-2 text-center">
+        <app-row-actions
+          [label]="'Opciones del pedido ' + order.id"
+          [actions]="actionsFor(order)"
+          (selected)="handleAction($event, order)"
+        />
       </td>
     </tr>
     } @empty {
     <tr>
-      <td colspan="7" class="py-10 text-center text-pc-grey">No hay pedidos para mostrar.</td>
+      <td colspan="8" class="py-10 text-center text-pc-grey">No hay pedidos para mostrar.</td>
     </tr>
     }
   </app-data-table>
   } @if (totalCount() > 0) {
   <div class="mt-auto">
     <app-pagination
-      [page]="query.page()"
+      [page]="currentPage()"
       [pageSize]="query.pageSize()"
       [pageSizeOptions]="pageSizeOptions"
       [totalItems]="totalCount()"

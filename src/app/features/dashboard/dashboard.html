@@ -8,61 +8,99 @@
     </p>
   </div>
 
+  @if (data.loading()) {
+  <p role="status" class="text-sm text-ink-muted">Cargando dashboard...</p>
+  } @else if (data.error()) {
+  <div
+    role="alert"
+    class="rounded-panel border border-border bg-surface p-4 text-sm text-ink-muted"
+  >
+    No se pudo cargar el dashboard.
+    <button type="button" class="ml-2 font-medium text-brand" (click)="data.retry()">
+      Reintentar
+    </button>
+  </div>
+  } @else { @if (data.missingAmounts()) {
+  <p class="text-sm text-ink-muted">
+    Hay {{ data.missingAmounts() }} ventas pagadas sin importe registrado. Los totales solo incluyen
+    importes conocidos.
+  </p>
+  }
   <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
     <article class="summary-card min-w-0 rounded-card bg-card-sales p-4 sm:p-5">
       <div class="grid min-w-0 grid-cols-[44px_minmax(0,1fr)] items-center gap-x-4 gap-y-1">
-        <div [class.row-span-2]="salesTotalLabel.length <= 15" class="flex size-11 shrink-0 items-center justify-center rounded-control bg-card-sales-icon-bg text-card-sales-icon-text" aria-hidden="true">
+        <div
+          [class.row-span-2]="salesTotalLabel().length <= 15"
+          class="flex size-11 shrink-0 items-center justify-center rounded-control bg-card-sales-icon-bg text-card-sales-icon-text"
+          aria-hidden="true"
+        >
           <app-icon name="sales" [size]="20" />
         </div>
         <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
           <p class="text-sm font-medium leading-snug text-ink-muted">Ventas totales</p>
-          <span class="inline-flex shrink-0 items-center gap-1 rounded-full border border-growth-border bg-growth-bg px-2 py-1 text-[10px] font-medium leading-none text-growth-text">
-            <span aria-hidden="true">↑</span><span>25%</span>
-          </span>
         </div>
-        <h2 [class.col-span-2]="salesTotalLabel.length > 15" [class.col-start-2]="salesTotalLabel.length <= 15" [style.--value-length]="salesTotalLabel.length" class="summary-value min-w-0 font-semibold leading-tight tracking-tight text-ink">{{ salesTotalLabel }}</h2>
+        <h2
+          [class.col-span-2]="salesTotalLabel().length > 15"
+          [class.col-start-2]="salesTotalLabel().length <= 15"
+          [style.--value-length]="salesTotalLabel().length"
+          class="summary-value min-w-0 font-semibold leading-tight tracking-tight text-ink"
+        >
+          {{ salesTotalLabel() }}
+        </h2>
       </div>
     </article>
     <article class="summary-card min-w-0 rounded-card bg-card-orders p-4 sm:p-5">
       <div class="grid min-w-0 grid-cols-[44px_minmax(0,1fr)] items-center gap-x-4 gap-y-1">
-        <div class="flex size-11 shrink-0 items-center justify-center rounded-control bg-card-orders-icon-bg text-card-orders-icon-text row-span-2" aria-hidden="true">
+        <div
+          class="flex size-11 shrink-0 items-center justify-center rounded-control bg-card-orders-icon-bg text-card-orders-icon-text row-span-2"
+          aria-hidden="true"
+        >
           <app-icon name="orders" [size]="20" />
         </div>
         <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
           <p class="text-sm font-medium leading-snug text-ink-muted">Pedidos totales</p>
-          <span class="inline-flex shrink-0 items-center gap-1 rounded-full border border-growth-border bg-growth-bg px-2 py-1 text-[10px] font-medium leading-none text-growth-text">
-            <span aria-hidden="true">↑</span><span>8%</span>
-          </span>
         </div>
-        <h2 class="summary-value min-w-0 font-semibold leading-tight tracking-tight text-ink col-start-2">76</h2>
+        <h2
+          class="summary-value min-w-0 font-semibold leading-tight tracking-tight text-ink col-start-2"
+        >
+          {{ data.orderCount() }}
+        </h2>
       </div>
     </article>
     <article class="summary-card min-w-0 rounded-card bg-card-customers p-4 sm:p-5">
       <div class="grid min-w-0 grid-cols-[44px_minmax(0,1fr)] items-center gap-x-4 gap-y-1">
-        <div class="flex size-11 shrink-0 items-center justify-center rounded-control bg-card-customers-icon-bg text-card-customers-icon-text row-span-2" aria-hidden="true">
+        <div
+          class="flex size-11 shrink-0 items-center justify-center rounded-control bg-card-customers-icon-bg text-card-customers-icon-text row-span-2"
+          aria-hidden="true"
+        >
           <app-icon name="customers" [size]="20" />
         </div>
         <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-          <p class="text-sm font-medium leading-snug text-ink-muted">Clientes nuevos</p>
-          <span class="inline-flex shrink-0 items-center gap-1 rounded-full border border-growth-border bg-growth-bg px-2 py-1 text-[10px] font-medium leading-none text-growth-text">
-            <span aria-hidden="true">↑</span><span>1%</span>
-          </span>
+          <p class="text-sm font-medium leading-snug text-ink-muted">Clientes registrados</p>
         </div>
-        <h2 class="summary-value min-w-0 font-semibold leading-tight tracking-tight text-ink col-start-2">12</h2>
+        <h2
+          class="summary-value min-w-0 font-semibold leading-tight tracking-tight text-ink col-start-2"
+        >
+          {{ data.customerCount() }}
+        </h2>
       </div>
     </article>
     <article class="summary-card min-w-0 rounded-card bg-card-products p-4 sm:p-5">
       <div class="grid min-w-0 grid-cols-[44px_minmax(0,1fr)] items-center gap-x-4 gap-y-1">
-        <div class="flex size-11 shrink-0 items-center justify-center rounded-control bg-card-products-icon-bg text-card-products-icon-text row-span-2" aria-hidden="true">
+        <div
+          class="flex size-11 shrink-0 items-center justify-center rounded-control bg-card-products-icon-bg text-card-products-icon-text row-span-2"
+          aria-hidden="true"
+        >
           <app-icon name="products" [size]="20" />
         </div>
         <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
           <p class="text-sm font-medium leading-snug text-ink-muted">Productos totales</p>
-          <span class="inline-flex shrink-0 items-center gap-1 rounded-full border border-growth-border bg-growth-bg px-2 py-1 text-[10px] font-medium leading-none text-growth-text">
-            <span aria-hidden="true">↑</span><span>5%</span>
-          </span>
         </div>
-        <h2 class="summary-value min-w-0 font-semibold leading-tight tracking-tight text-ink col-start-2">1649</h2>
+        <h2
+          class="summary-value min-w-0 font-semibold leading-tight tracking-tight text-ink col-start-2"
+        >
+          {{ data.productCount() }}
+        </h2>
       </div>
     </article>
   </div>
@@ -70,7 +108,10 @@
   <!-- Weekly report -->
   <section class="rounded-panel border border-border bg-surface p-4 sm:p-5">
     <div class="flex flex-wrap items-center justify-between gap-4">
-      <h2 class="text-base font-semibold text-ink">Informe de esta semana</h2>
+      <h2 class="text-base font-semibold text-ink">
+        {{ selectedWeek() === 'current' ? 'Informe de esta semana' : 'Informe de la semana anterior'
+        }}
+      </h2>
 
       <div class="flex items-center rounded-full bg-success-soft p-1">
         <button
@@ -100,7 +141,8 @@
     </div>
 
     <div class="mt-6 min-w-0 max-w-full overflow-hidden">
-      <apx-chart class="block min-w-0 max-w-full"
+      <apx-chart
+        class="block min-w-0 max-w-full"
         [series]="chartSeries()"
         [chart]="chartOptions.chart"
         [colors]="chartOptions.colors"
@@ -131,94 +173,47 @@
           </p>
         </div>
 
-        <a routerLink="/orders" class="shrink-0 text-sm font-medium text-brand transition-colors hover:text-brand-hover">Ver todos</a>
+        <a
+          routerLink="/orders"
+          class="shrink-0 text-sm font-medium text-brand transition-colors hover:text-brand-hover"
+          >Ver todos</a
+        >
       </div>
 
       <div class="mt-5">
         <app-data-table [columns]="recentOrdersColumns">
+          @for (order of data.recentOrders(); track order.id) {
           <tr class="h-[56px] transition-colors hover:bg-table-row-hover">
-            <td class="border-b border-table-divider px-5 py-2 text-sm font-medium text-ink">
-              #PL-1048
+            <td class="border-b border-table-divider px-5 py-2 text-sm font-medium text-brand">
+              <a [routerLink]="['/orders', order.id]" [attr.aria-label]="'Ver pedido #' + order.id"
+                >#{{ order.id }}</a
+              >
             </td>
-
-            <td class="border-b border-table-divider px-5 py-2 text-sm font-normal text-ink-muted">
-              Andrea Ramos
+            <td class="border-b border-table-divider px-5 py-2 text-sm text-ink-muted">
+              {{ order.customerName }}
             </td>
-
             <td class="border-b border-table-divider px-5 py-2">
-              <app-badge variant="success"> Completado </app-badge>
+              <app-order-progress [order]="order" [editable]="false" />
+              @if(order.status === 'paid') {
+              <p class="mt-1 text-xs text-brand">Pagado</p>
+              }@if(order.paymentMethod === 'VISA_PLATINUM_SIMULATED'){
+              <p class="mt-1 text-xs text-ink-muted">Tarjeta · Visa</p>
+              }
             </td>
-
-            <td class="border-b border-table-divider px-5 py-2 text-sm font-medium text-ink">
-              S/ 128.90
+            <td class="border-b border-table-divider px-5 py-2 text-sm text-ink">
+              {{ order.total === null ? '—' : (order.total | currency:'PEN':'S/ ':'1.2-2') }}
             </td>
-
-            <td class="border-b border-table-divider px-5 py-2 text-sm font-normal text-ink-muted">
-              Hoy, 10:42
+            <td class="border-b border-table-divider px-5 py-2 text-sm text-ink-muted">
+              {{ order.createdAt | date:'dd/MM/yyyy' }}
             </td>
-
           </tr>
-
-          <tr class="h-[56px] transition-colors hover:bg-table-row-hover">
-            <td class="border-b border-table-divider px-5 py-2 text-sm font-medium text-ink">
-              #PL-1047
+          } @empty {
+          <tr>
+            <td colspan="5" class="px-5 py-8 text-center text-sm text-ink-muted">
+              No hay pedidos registrados.
             </td>
-
-            <td class="border-b border-table-divider px-5 py-2 text-sm font-normal text-ink-muted">
-              Luis Mendoza
-            </td>
-
-            <td class="border-b border-table-divider px-5 py-2">
-              <app-badge variant="warning"> Pendiente </app-badge>
-            </td>
-
-            <td class="border-b border-table-divider px-5 py-2 text-sm font-medium text-ink">
-              S/ 76.50
-            </td>
-
-            <td class="border-b border-table-divider px-5 py-2 text-sm font-normal text-ink-muted">
-              Hoy, 09:18
-            </td>
-
           </tr>
-
-          <tr class="h-[56px] transition-colors hover:bg-table-row-hover">
-            <td class="border-b border-table-divider px-5 py-2 text-sm font-medium text-ink">
-              #PL-1046
-            </td>
-
-            <td class="border-b border-table-divider px-5 py-2 text-sm font-normal text-ink-muted">
-              Valeria Soto
-            </td>
-
-            <td class="border-b border-table-divider px-5 py-2">
-              <app-badge variant="info"> En proceso </app-badge>
-            </td>
-
-            <td class="border-b border-table-divider px-5 py-2 text-sm font-medium text-ink">
-              S/ 214.00
-            </td>
-
-            <td class="border-b border-table-divider px-5 py-2 text-sm font-normal text-ink-muted">
-              Ayer, 17:35
-            </td>
-
-          </tr>
-
-          <tr class="h-[56px] transition-colors hover:bg-table-row-hover">
-            <td class="px-5 py-2 text-sm font-medium text-ink">#PL-1045</td>
-
-            <td class="px-5 py-2 text-sm font-normal text-ink-muted">Carlos Vega</td>
-
-            <td class="px-5 py-2">
-              <app-badge variant="danger"> Cancelado </app-badge>
-            </td>
-
-            <td class="px-5 py-2 text-sm font-medium text-ink">S/ 59.90</td>
-
-            <td class="px-5 py-2 text-sm font-normal text-ink-muted">Ayer, 15:08</td>
-
-          </tr>
+          }
         </app-data-table>
       </div>
     </section>
@@ -229,17 +224,20 @@
         <h2 class="text-base font-semibold text-ink">Ventas por categoría</h2>
 
         <p class="mt-1 text-sm font-normal text-ink-muted">
-          Distribución de ventas por tipo de libro.
+          Unidades de pedidos pagados por categoría actual del catálogo.
         </p>
       </div>
 
+      @if (!data.categories().length) {
+      <p class="mt-4 text-sm text-ink-muted">No hay unidades vendidas para mostrar.</p>
+      }
       <div class="mt-4 flex min-h-0 min-w-0 flex-1 items-center overflow-hidden">
         <apx-chart
           class="block w-full min-w-0"
-          [series]="categoryChartOptions.series"
+          [series]="categorySeries()"
           [chart]="categoryChartOptions.chart"
           [colors]="categoryChartOptions.colors"
-          [xaxis]="categoryChartOptions.xaxis"
+          [xaxis]="categoryXAxis()"
           [yaxis]="categoryChartOptions.yaxis"
           [dataLabels]="categoryChartOptions.dataLabels"
           [grid]="categoryChartOptions.grid"
@@ -249,4 +247,5 @@
       </div>
     </section>
   </div>
+  }
 </section>

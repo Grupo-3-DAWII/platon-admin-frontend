@@ -42,6 +42,7 @@ export interface ProductDto {
 }
 
 export interface ProductSummaryDto {
+  isbn?: string;
   idProduct: number;
   name: string;
   author: string;
@@ -87,6 +88,7 @@ export interface Product {
 }
 
 export interface ProductSummary {
+  isbn?: string;
   id: number;
   name: string;
   author: string;
@@ -124,6 +126,7 @@ export const toProduct = (d: ProductDto): Product => ({
 });
 
 export const toProductSummary = (d: ProductSummaryDto): ProductSummary => ({
+  isbn: d.isbn,
   id: d.idProduct,
   name: d.name,
   author: d.author,

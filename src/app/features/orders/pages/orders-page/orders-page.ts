@@ -1,17 +1,17 @@
+import { ConfirmationService } from '../../../../shared/components/confirm-dialog/confirm-dialog';
+import { OrderProgress } from '../../components/order-progress/order-progress';
+import {
+  FulfillmentFilter,
+  FulfillmentStatus,
+  PROGRESS_FILTERS,
+  progressOf,
+} from '../../models/order-progress';
+import { orderConfirmation } from '../../utils/order-confirmation';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import {
-  catchError,
-  debounceTime,
-  distinctUntilChanged,
-  Observable,
-  of,
-  Subject,
-  switchMap,
-  tap,
-} from 'rxjs';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { catchError, of, switchMap, tap, merge, timer } from 'rxjs';
 
 import { DataTable, TableColumn } from '../../../../shared/components/data-table/data-table';
 import { FiltersBar } from '../../../../shared/components/filters-bar/filters-bar';
@@ -20,14 +20,21 @@ import { OrderStatusBadge } from '../../../../shared/components/order-status-bad
 import { PageHeader } from '../../../../shared/components/page-header/page-header';
 import { Pagination } from '../../../../shared/components/pagination/pagination';
 import { RowAction, RowActions } from '../../../../shared/components/row-actions/row-actions';
-import { ORDER_FILTERS, OrderFilter } from '../../../../shared/models/order-status';
+
 import { ListQuery } from '../../../../shared/utils/list-query';
-import { Order, STATE_BY_FILTER } from '../../models/order';
-import { OrdersResult, OrdersService } from '../../services/orders.service';
-import { RouterLink } from '@angular/router';
+import { Order } from '../../models/order';
+import { OrdersService } from '../../services/orders.service';
+import { Router, RouterLink } from '@angular/router';
 import { orderErrorMessage } from '../../utils/order-errors';
 
-const EMPTY_RESULT: OrdersResult = { content: [], totalElements: 0 };
+import { CollectionFilters } from '../../../../shared/components/collection-filters/collection-filters';
+import {
+  CollectionFiltersValue,
+  activeCollectionFilterCount,
+  emptyCollectionFilters,
+  sortFieldLabel,
+} from '../../../../shared/utils/collection-filters';
+import { filterOrders } from '../../utils/order-list';
 
 @Component({
   imports: [
@@ -35,8 +42,10 @@ const EMPTY_RESULT: OrdersResult = { content: [], totalElements: 0 };
     DataTable,
     DatePipe,
     FiltersBar,
+    CollectionFilters,
     Icon,
     OrderStatusBadge,
+    OrderProgress,
     PageHeader,
     Pagination,
     RowActions,
@@ -47,99 +56,147 @@ const EMPTY_RESULT: OrdersResult = { content: [], totalElements: 0 };
 })
 export class OrdersPage {
   private readonly service = inject(OrdersService);
-  private readonly searchInput$ = new Subject<string>();
+  private readonly confirmation = inject(ConfirmationService);
+  private readonly router = inject(Router);
+  readonly filterPanelOpen = signal(false);
+  readonly advancedFilters = signal(emptyCollectionFilters('orders'));
+  readonly descending = signal(true);
+  readonly activeFilterCount = computed(() => activeCollectionFilterCount(this.advancedFilters()));
+  readonly sortDescription = computed(
+    () =>
+      sortFieldLabel(this.advancedFilters().sortBy, 'orders') +
+      ' · ' +
+      (this.descending() ? 'Descendente' : 'Ascendente'),
+  );
+  readonly sortLabel = computed(
+    () =>
+      this.sortDescription() + '. Cambiar a ' + (this.descending() ? 'ascendente' : 'descendente'),
+  );
 
   readonly columns: TableColumn[] = [
-    { key: 'id', label: '#', width: '8%' },
-    { key: 'customer', label: 'Cliente', width: '20%' },
-    { key: 'product', label: 'Producto', width: '24%' },
-    { key: 'date', label: 'Fecha', width: '12%' },
-    { key: 'total', label: 'Total', width: '12%' },
-    { key: 'status', label: 'Estado', width: '12%' },
-    { key: 'actions', label: 'Acciones', width: '12%', align: 'center' },
+    { key: 'id', label: '#', width: '6%' },
+    { key: 'customer', label: 'Cliente', width: '18%' },
+    { key: 'product', label: 'Producto', width: '20%' },
+    { key: 'date', label: 'Fecha', width: '11%' },
+    { key: 'total', label: 'Total', width: '11%' },
+    { key: 'payment', label: 'Pago', width: '10%' },
+    { key: 'status', label: 'Pedido', width: '15%' },
+    { key: 'actions', label: 'Acciones', width: '9%', align: 'center' },
   ];
 
-  readonly filters = ORDER_FILTERS;
+  readonly filters = PROGRESS_FILTERS;
   readonly pageSizeOptions = [5, 10, 25, 50];
-  readonly query = new ListQuery<OrderFilter>('pending');
+  readonly query = new ListQuery<FulfillmentFilter>('all');
 
-  readonly rowActions: RowAction[] = [
-    { id: 'accept', label: 'Aceptar pago', icon: 'sales' },
-    { id: 'reject', label: 'Rechazar pago', icon: 'circle-danger', danger: true },
-  ];
+  actionsFor(order: Order): RowAction[] {
+    return [
+      { id: 'view', label: 'Ver detalle', icon: 'show2' },
+      ...(order.status === 'pending'
+        ? [
+            {
+              id: 'reject',
+              label: 'Cancelar pedido',
+              icon: 'circle-danger',
+              danger: true,
+              disabled: this.busy(),
+            },
+          ]
+        : []),
+    ];
+  }
 
   readonly loading = signal(true);
   readonly error = signal(false);
   readonly actionError = signal<string | null>(null);
-  private readonly busy = signal(false);
+  readonly busy = signal(false);
   private readonly reloadTick = signal(0);
 
-  private readonly params = computed(() => ({
-    page: this.query.page() - 1,
-    size: this.query.pageSize(),
-    state: STATE_BY_FILTER[this.query.filter()],
-    search: this.query.search(),
-    tick: this.reloadTick(),
-  }));
-
   private readonly result = toSignal(
-    toObservable(this.params).pipe(
-      tap(() => {
-        this.loading.set(true);
-        this.error.set(false);
-      }),
-      switchMap(({ page, size, state, search }) =>
-        this.service.getPage({ page, size, state, search }).pipe(
+    merge(toObservable(this.reloadTick), timer(8000, 8000)).pipe(
+      switchMap(() =>
+        this.service.getAll().pipe(
+          tap(() => this.error.set(false)),
           catchError(() => {
             this.error.set(true);
-            return of(EMPTY_RESULT);
+            return of([] as Order[]);
           }),
+          tap(() => this.loading.set(false)),
         ),
       ),
-      tap((res) => {
-        this.loading.set(false);
-        if (this.error()) return;
-        const lastPage = Math.max(1, Math.ceil(res.totalElements / this.query.pageSize()));
-        if (this.query.page() > lastPage) this.query.setPage(lastPage);
-      }),
     ),
-    { initialValue: EMPTY_RESULT },
+    { initialValue: [] as Order[] },
   );
-
-  readonly totalCount = computed(() => this.result().totalElements);
-
-  readonly orders = computed(() => this.result().content);
-  constructor() {
-    this.searchInput$
-      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
-      .subscribe((term) => this.query.setSearch(term));
+  readonly filteredOrders = computed(() =>
+    filterOrders(
+      this.result(),
+      'all',
+      this.query.search(),
+      this.advancedFilters(),
+      this.descending(),
+    ).filter((order) => this.query.filter() === 'all' || progressOf(order) === this.query.filter()),
+  );
+  readonly totalCount = computed(() => this.filteredOrders().length);
+  readonly currentPage = computed(() =>
+    Math.min(this.query.page(), Math.max(1, Math.ceil(this.totalCount() / this.query.pageSize()))),
+  );
+  readonly orders = computed(() =>
+    this.filteredOrders().slice(
+      (this.currentPage() - 1) * this.query.pageSize(),
+      this.currentPage() * this.query.pageSize(),
+    ),
+  );
+  updateProgress(order: Order, status: FulfillmentStatus): void {
+    if (this.busy()) return;
+    this.busy.set(true);
+    this.actionError.set(null);
+    this.service.updateOrderStatus(order.id, status).subscribe({
+      next: () => {
+        this.busy.set(false);
+        this.retry();
+      },
+      error: (error: HttpErrorResponse) => {
+        this.busy.set(false);
+        this.actionError.set(orderErrorMessage(error));
+        this.retry();
+      },
+    });
   }
-
   onSearch(term: string) {
-    this.searchInput$.next(term.trim());
+    this.query.setSearch(term);
+  }
+  applyAdvancedFilters(value: CollectionFiltersValue) {
+    this.advancedFilters.set({ ...value });
+    this.query.setPage(1);
+    this.filterPanelOpen.set(false);
+  }
+  clearAdvancedFilters() {
+    this.advancedFilters.set(emptyCollectionFilters('orders'));
+    this.query.setPage(1);
+  }
+  toggleSort() {
+    this.descending.update((value) => !value);
+    this.query.setPage(1);
   }
   retry() {
     this.reloadTick.update((n) => n + 1);
   }
 
-  handleAction(action: string, order: Order) {
-    if (this.busy()) return;
-    if (action === 'accept' && order.total === null) {
-      this.actionError.set('Este pedido no tiene un total definido, no se puede aceptar el pago.');
+  async handleAction(action: string, order: Order): Promise<void> {
+    if (action === 'view') {
+      this.router.navigate(['/orders', order.id]);
       return;
     }
-    const verb = action === 'accept' ? 'aceptar' : 'rechazar';
+    if (action !== 'reject' || order.status !== 'pending' || this.busy()) return;
     if (
-      !confirm(
-        `¿Seguro que quieres ${verb} el pago del pedido #${order.id}? No se podrá cambiar después.`,
-      )
+      !(await this.confirmation.ask(
+        `Cancelar pedido #${order.id}`,
+        orderConfirmation('reject', order.id),
+        'Cancelar pedido',
+        true,
+      ))
     )
       return;
-
-    const request$: Observable<void> =
-      action === 'accept'
-        ? this.service.acceptPayment(order.id, order.total!)
-        : this.service.rejectPayment(order.id);
+    const request$ = this.service.rejectPayment(order.id);
 
     this.busy.set(true);
     this.actionError.set(null);

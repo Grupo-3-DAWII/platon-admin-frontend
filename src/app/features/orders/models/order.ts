@@ -1,3 +1,4 @@
+import type { FulfillmentStatus } from './order-progress';
 import { OrderFilter, OrderStatus } from '../../../shared/models/order-status';
 
 // --- Backend ---
@@ -25,6 +26,10 @@ export interface OrderDto {
   buyer: { name: string; lastname: string } | null;
   products: OrderItemDto[];
   totalAmount: number | null;
+  orderStatus?: FulfillmentStatus;
+  paymentMethod?: string | null;
+  paidAt?: string | null;
+  paymentReference?: string | null;
 }
 
 export interface OrdersPageDto {
@@ -39,6 +44,8 @@ export interface OrdersPageDto {
 // --- Modelo que usa la UI ---
 
 export interface OrderLine {
+  isbn?: string;
+  author?: string;
   productId: number;
   productName: string;
   quantity: number;
@@ -53,6 +60,10 @@ export interface Order {
   total: number | null;
   status: OrderStatus;
   createdAt: string;
+  orderStatus?: FulfillmentStatus;
+  paymentMethod?: string | null;
+  paidAt?: string | null;
+  paymentReference?: string | null;
 }
 
 const STATUS_BY_STATE: Record<string, OrderStatus> = {
@@ -72,6 +83,8 @@ export const toOrder = (d: OrderDto): Order => ({
   customerName: d.buyer ? `${d.buyer.name} ${d.buyer.lastname}`.trim() : 'Cliente desconocido',
   items: (d.products ?? []).map((i) => ({
     productId: i.idProducts,
+    isbn: i.product?.isbn,
+    author: i.product?.author,
     productName: i.product?.name ?? `Producto #${i.idProducts}`,
     quantity: i.numberSold,
     unitPrice: i.unitPrice,
@@ -80,6 +93,10 @@ export const toOrder = (d: OrderDto): Order => ({
   total: d.totalAmount,
   status: STATUS_BY_STATE[d.stateSold.nameState.toUpperCase()] ?? 'unknown',
   createdAt: d.createDate,
+  orderStatus: d.orderStatus,
+  paymentMethod: d.paymentMethod,
+  paidAt: d.paidAt,
+  paymentReference: d.paymentReference,
 });
 export interface OrderStateDto {
   idStateSold: number;

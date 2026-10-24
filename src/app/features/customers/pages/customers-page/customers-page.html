@@ -154,7 +154,7 @@
           }
         </fieldset>
         @if (formError()) { <p role="alert" class="mt-4 text-sm text-danger">{{ formError() }}</p> }
-        <div class="mt-6 flex justify-end gap-3">
+        <div class="dialog-actions mt-6 flex justify-end gap-3">
           <button type="button" [disabled]="saving()" (click)="closeCustomer()" class="rounded-full border border-border px-5 py-2 text-sm">Cancelar</button>
           <button type="submit" [disabled]="saving()" class="rounded-full bg-brand px-5 py-2 text-sm text-white">{{ saving() ? 'Guardando…' : 'Guardar cliente' }}</button>
         </div>
@@ -180,7 +180,7 @@
   <h2 id="deactivate-customer-title" class="text-xl font-semibold">Desactivar cliente</h2>
   <p class="mt-3 text-sm text-ink-muted">{{ selectedCustomer()?.fullName }} no podrá iniciar una nueva sesión. Sus datos y sus compras se conservarán.</p>
   @if (formError()) { <p role="alert" class="mt-4 text-sm text-danger">{{ formError() }}</p> }
-  <div class="mt-6 flex justify-end gap-3">
+  <div class="dialog-actions mt-6 flex justify-end gap-3">
     <button type="button" [disabled]="saving()" (click)="closeDeactivate()" class="rounded-full border border-border px-4 py-2 text-sm">Cancelar</button>
     <button type="button" [disabled]="saving()" (click)="deactivateCustomer()" class="rounded-full bg-danger px-4 py-2 text-sm text-white">{{ saving() ? 'Desactivando…' : 'Desactivar' }}</button>
   </div>

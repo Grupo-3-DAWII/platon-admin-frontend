@@ -11,6 +11,9 @@ import { Icon } from '../icon/icon';
 })
 export class SearchInput {
   placeholder = input('Buscar...');
+  label = input<string>();
+  value = input('');
+  clearable = input(false);
 
   valueChange = output<string>();
 
